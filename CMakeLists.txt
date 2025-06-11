@@ -11,7 +11,7 @@ set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
 set(BUILD_SHARED_LIBS OFF)
 set(SDL3IMAGE_VENDORED ON)
-#set(CMAKE_WIN32_EXECUTABLE FALSE)
+set(CMAKE_WIN32_EXECUTABLE FALSE)
 
 add_executable(BAGEL
         bagel.h
@@ -21,7 +21,8 @@ add_executable(BAGEL
         gold_miner_ecs.h
         sprite_manager.cpp
         sprite_manager.h
-)
+        debug_draw.cpp debug_draw.h
+        )
 
 add_subdirectory(lib/SDL)
 target_link_libraries(BAGEL PUBLIC SDL3-static)
@@ -41,7 +42,7 @@ target_link_libraries(BAGEL PUBLIC box2d)
 
 add_custom_command(
         TARGET BAGEL POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${PROJECT_SOURCE_DIR}/res"
         "$<TARGET_FILE_DIR:BAGEL>/res"
 )

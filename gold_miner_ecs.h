@@ -135,6 +135,7 @@ namespace goldminer {
     void PhysicsSyncSystem();
     void DebugCollisionSystem();
     void RopeRenderSystem(SDL_Renderer* renderer);
+    void Box2DDebugRenderSystem(SDL_Renderer* renderer);
 
 //----------------------------------
 /// @section Entity Creation
@@ -151,6 +152,7 @@ namespace goldminer {
     id_type CreateUIEntity(int playerID);
     id_type CreateMole(float x, float y);
 
+    void Box2DDebugRenderSystem(SDL_Renderer *pRenderer);
 } // namespace goldminer
 
 enum SpriteID {

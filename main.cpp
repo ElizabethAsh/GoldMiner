@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <box2d/box2d.h>
-
+#include "debug_draw.h"
 #include "gold_miner_ecs.h"
 #include "sprite_manager.h"
 #include "bagel.h"
@@ -25,18 +25,18 @@ int main() {
         std::cerr << "Renderer creation failed: " << SDL_GetError() << std::endl;
         return 1;
     }
-
+    // Initialize debug drawing with your renderer
+    InitDebugDraw(renderer);
     goldminer::initBox2DWorld();
     // Load sprite textures from "res" folder
     LoadAllSprites(renderer);
     // Create some initial entities
     goldminer::CreatePlayer(1);
     goldminer::CreateRope(1);
-    goldminer::CreateGold(100.0f, 500.0f);
-    goldminer::CreateDiamond(600.0f, 520.0f);
-    goldminer::CreateRock(1000.0f, 530.0f);
-//    goldminer::CreateMysteryBag(300.0f, 510.0f);
-    goldminer::CreateTreasureChest(300.0f, 510.0f);
+    goldminer::CreateGold(1000.0f, 530.0f);
+    goldminer::CreateDiamond(200.0f, 300.0f);
+    goldminer::CreateRock(400.0f, 520.0f);
+    goldminer::CreateTreasureChest(600.0f, 520.0f);
 
     bool running = true;
     SDL_Event e;
@@ -48,10 +48,10 @@ int main() {
             }
         }
 
-        // Step the Box2D world at fixed time step (60 FPS)
-        constexpr float timeStep = 1.0f / 60.0f;
-        constexpr int velocityIterations = 8;
-        constexpr int positionIterations = 3;
+        constexpr float timeStep = 1.0f / 120.0f;  // 120 FPS simulation
+        constexpr int velocityIterations = 12;
+        constexpr int positionIterations = 6;
+
         b2World_Step(goldminer::gWorld, timeStep, velocityIterations);
 
         goldminer::PhysicsSyncSystem();
@@ -68,6 +68,7 @@ int main() {
         // Render ECS entities
         goldminer::RenderSystem(renderer);
         goldminer::RopeRenderSystem(renderer);
+        goldminer::Box2DDebugRenderSystem(renderer);
 
 
         SDL_RenderPresent(renderer);
