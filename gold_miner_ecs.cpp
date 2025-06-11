@@ -550,100 +550,52 @@ namespace goldminer {
  * Prerequisite: You must enable hit events on the relevant bodies using b2Body_EnableHitEvents().
  */
 
-//    void CollisionSystem() {
-//        std::cout << "\n[CollisionSystem] Checking Box2D hit events...\n";
-//
-//        if (!b2World_IsValid(gWorld)){
-//            std::cerr << "[CollisionSystem] gWorld is null!\n";
-//            return;
-//        }
-//
-//        b2ContactEvents events = b2World_GetContactEvents(gWorld);
-//        std::cout << "[CollisionSystem] hitCount = " << events.hitCount << "\n";
-//
-//        if (events.hitCount == 0) {
-//            std::cout << "No hits detected by Box2D this frame.\n";
-//        }
-//
-//        for (int i = 0; i < events.hitCount; ++i) {
-//            const b2ContactHitEvent &hit = events.hitEvents[i];
-//
-//            b2ShapeId shapeA = hit.shapeIdA;
-//            b2ShapeId shapeB = hit.shapeIdB;
-//
-//            b2BodyId bodyA = b2Shape_GetBody(shapeA);
-//            b2BodyId bodyB = b2Shape_GetBody(shapeB);
-//
-//            auto *userDataA = static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyA));
-//            auto *userDataB = static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyB));
-//
-//            if (!userDataA || !userDataB) {
-//                std::cout << "One of the entities has no user data.\n";
-//                continue;
-//            }
-//
-//            bagel::ent_type entA = *userDataA;
-//            bagel::ent_type entB = *userDataB;
-//
-//            std::cout << "Hit detected between Entity " << entA.id << " and Entity " << entB.id << std::endl;
-//
-//            if (bagel::World::mask(entA).test(bagel::Component<Collectable>::Bit)) {
-//                std::cout << "Collectable A got hit!\n";
-//            }
-//            if (bagel::World::mask(entB).test(bagel::Component<Collectable>::Bit)) {
-//                std::cout << "Collectable B got hit!\n";
-//            }
-//        }
-//    }
-
-     void CollisionSystem() {
-        std::cout << "\n Checking Box2D contact events...\n";
+    void CollisionSystem() {
+        std::cout << "\n[CollisionSystem] Checking Box2D hit events...\n";
 
         if (!b2World_IsValid(gWorld)){
-            std::cerr << " gWorld is null!\n";
+            std::cerr << "[CollisionSystem] gWorld is null!\n";
             return;
         }
 
         b2ContactEvents events = b2World_GetContactEvents(gWorld);
-        std::cout << " beginCount = " << events.beginCount << "\n";
-        std::cout << " endCount = " << events.endCount << "\n";
-        std::cout << " hitCount = " << events.hitCount << "\n";
+        std::cout << "[CollisionSystem] hitCount = " << events.hitCount << "\n";
 
-        if (events.beginCount == 0 && events.endCount == 0 && events.hitCount == 0) {
-            std::cout << "No contact events detected by Box2D this frame.\n";
+        if (events.hitCount == 0) {
+            std::cout << "No hits detected by Box2D this frame.\n";
         }
 
-        // Process begin events
-        for (int i = 0; i < events.beginCount; ++i) {
-            const b2ContactBeginTouchEvent &begin = events.beginEvents[i];
-            b2BodyId bodyA = b2Shape_GetBody(begin.shapeIdA);
-            b2BodyId bodyB = b2Shape_GetBody(begin.shapeIdB);
-            //... (your existing user data retrieval and printing logic)
-            std::cout << "BEGIN Contact detected between Entity " << static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyA))->id
-                      << " and Entity " << static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyB))->id << std::endl;
-        }
-
-        // Process hit events (your original logic)
         for (int i = 0; i < events.hitCount; ++i) {
             const b2ContactHitEvent &hit = events.hitEvents[i];
-            b2BodyId bodyA = b2Shape_GetBody(hit.shapeIdA);
-            b2BodyId bodyB = b2Shape_GetBody(hit.shapeIdB);
-            //... (your existing user data retrieval and printing logic)
-            std::cout << "HIT detected between Entity " << static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyA))->id
-                      << " and Entity " << static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyB))->id << std::endl;
-            // You can also print hit.approachSpeed, hit.normal, hit.point for more details
-        }
 
-        // Process end events
-        for (int i = 0; i < events.endCount; ++i) {
-            const b2ContactEndTouchEvent &end = events.endEvents[i];
-            b2BodyId bodyA = b2Shape_GetBody(end.shapeIdA);
-            b2BodyId bodyB = b2Shape_GetBody(end.shapeIdB);
-            //... (your existing user data retrieval and printing logic)
-            std::cout << "END Contact detected between Entity " << static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyA))->id
-                      << " and Entity " << static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyB))->id << std::endl;
+            b2ShapeId shapeA = hit.shapeIdA;
+            b2ShapeId shapeB = hit.shapeIdB;
+
+            b2BodyId bodyA = b2Shape_GetBody(shapeA);
+            b2BodyId bodyB = b2Shape_GetBody(shapeB);
+
+            auto *userDataA = static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyA));
+            auto *userDataB = static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyB));
+
+            if (!userDataA || !userDataB) {
+                std::cout << "One of the entities has no user data.\n";
+                continue;
+            }
+
+            bagel::ent_type entA = *userDataA;
+            bagel::ent_type entB = *userDataB;
+
+            std::cout << "Hit detected between Entity " << entA.id << " and Entity " << entB.id << std::endl;
+
+            if (bagel::World::mask(entA).test(bagel::Component<Collectable>::Bit)) {
+                std::cout << "Collectable A got hit!\n";
+            }
+            if (bagel::World::mask(entB).test(bagel::Component<Collectable>::Bit)) {
+                std::cout << "Collectable B got hit!\n";
+            }
         }
     }
+
     /**
  * @brief Debug system to detect collisions approximately by comparing positions.
  *
