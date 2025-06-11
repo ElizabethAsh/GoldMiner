@@ -68,7 +68,7 @@ int main() {
         // Render ECS entities
         goldminer::RenderSystem(renderer);
         goldminer::RopeRenderSystem(renderer);
-        goldminer::Box2DDebugRenderSystem(renderer);
+        goldminer::Box2DDebugRenderSystem(renderer); //not redundant
 
 
         SDL_RenderPresent(renderer);

@@ -152,7 +152,6 @@ namespace goldminer {
     id_type CreateUIEntity(int playerID);
     id_type CreateMole(float x, float y);
 
-    void Box2DDebugRenderSystem(SDL_Renderer *pRenderer);
 } // namespace goldminer
 
 enum SpriteID {
