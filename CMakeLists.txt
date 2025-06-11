@@ -15,6 +15,10 @@ set(SDL3IMAGE_VENDORED ON)
 add_executable(BAGEL
         bagel.h
         bagel_cfg.h
+        gold_miner_ecs.cpp
+        gold_miner_ecs.h
+        sprite_manager.cpp
+        sprite_manager.h
 )
 
 add_subdirectory(lib/SDL)
