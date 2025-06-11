@@ -11,10 +11,16 @@ set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
 set(BUILD_SHARED_LIBS OFF)
 set(SDL3IMAGE_VENDORED ON)
+#set(CMAKE_WIN32_EXECUTABLE FALSE)
 
 add_executable(BAGEL
         bagel.h
         bagel_cfg.h
+        main.cpp
+        gold_miner_ecs.cpp
+        gold_miner_ecs.h
+        sprite_manager.cpp
+        sprite_manager.h
 )
 
 add_subdirectory(lib/SDL)
