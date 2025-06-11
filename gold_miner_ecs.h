@@ -1,0 +1,147 @@
+/**
+ * @file gold_miner_ecs.h
+ * @brief Gold Miner game module using BAGEL ECS architecture.
+ *
+ * This module defines the game components, systems, and entity creation functions
+ * for the "Gold Miner" game, following the ECS model implemented with BAGEL.
+ */
+
+#ifndef GOLD_MINER_ECS_H
+#define GOLD_MINER_ECS_H
+
+#include <cstdint>
+#include <string>
+
+namespace goldminer {
+
+using id_type = int;
+
+//----------------------------------
+/// @section Components
+//----------------------------------
+
+struct Position {
+    float x = 0.0f;
+    float y = 0.0f;
+};
+
+struct Velocity {
+    float dx = 0.0f;
+    float dy = 0.0f;
+};
+
+struct Rotation {
+    float angle = 0.0f; ///< Rope rotation
+};
+
+struct Length {
+    float value = 0.0f; ///< Rope length
+};
+
+struct Renderable {
+    int spriteID = -1; ///< Sprite index or enum
+};
+
+struct PlayerInfo {
+    int playerID = -1;
+};
+
+struct RopeControl {
+    enum class State { AtRest, Extending, Retracting } state = State::AtRest;
+};
+
+struct ItemType {
+    enum class Type { Gold, Rock, Diamond, MysteryBag } type = Type::Gold;
+};
+
+struct Value {
+    int amount = 0;
+};
+
+struct Weight {
+    float w = 1.0f;
+};
+
+struct Score {
+    int points = 0;
+};
+
+struct GameTimer {
+    float timeLeft = 60.0f;
+};
+
+struct UIComponent {
+    int uiID = -1;
+};
+
+struct SoundEffect {
+    int soundID = -1; ///< Placeholder for sound index
+};
+
+struct Name {
+    std::string label;
+};
+
+struct Health {
+    int hp = 1;
+};
+
+struct Mole {
+    float speed = 100.0f;
+    bool movingRight = true;
+};
+
+struct LifeTime {
+    float remaining = 1.5f;
+};
+
+//----------------------------------
+/// @section Tags
+//----------------------------------
+
+struct Collectable {};
+struct RoperTag {};
+struct GameOverTag {};
+struct Collidable {};
+
+struct PlayerInput {
+    bool sendRope = false;
+    bool retractRope = false;
+};
+
+//----------------------------------
+/// @section System Declarations
+//----------------------------------
+
+void PlayerInputSystem();
+void RopeSwingSystem();
+void RopeExtensionSystem();
+void CollisionSystem();
+void PullObjectSystem();
+void ScoreSystem();
+void MysteryBagSystem();
+void RenderSystem();
+void TimerSystem();
+void UISystem();
+void AnimationSystem();
+void SoundSystem();
+void MoleAISystem();
+void LifeTimeSystem();
+
+//----------------------------------
+/// @section Entity Creation
+//----------------------------------
+
+id_type CreatePlayer(int playerID);
+id_type CreateRope(int playerID);
+id_type CreateGold(float x, float y);
+id_type CreateRock(float x, float y);
+id_type CreateDiamond(float x, float y);
+id_type CreateMysteryBag(float x, float y);
+id_type CreateTimer();
+id_type CreateUIEntity(int playerID);
+id_type CreateMole(float x, float y);
+
+} // namespace goldminer
+
+#endif // GOLD_MINER_ECS_H
