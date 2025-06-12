@@ -167,6 +167,8 @@ enum SpriteID {
     SPRITE_TITLE_TIME,
     SPRITE_TIMER,
     SPRITE_BACKGROUND,
+    SPRITE_PRESS_ENTER_TO_START, // New sprite for the main menu text
+    SPRITE_PAUSED_TEXT,          // New sprite for the pause menu text
 
 
     SPRITE_COUNT
