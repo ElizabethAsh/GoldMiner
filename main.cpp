@@ -30,19 +30,6 @@ int main() {
         std::cerr << "Renderer creation failed: " << SDL_GetError() << std::endl;
         return 1;
     }
-    // Initialize debug drawing with your renderer
-    InitDebugDraw(renderer);
-    goldminer::initBox2DWorld();
-    // Load sprite textures from "res" folder
-    LoadAllSprites(renderer);
-    // Create some initial entities
-    goldminer::CreatePlayer(1);
-    goldminer::CreateRope(1);
-    goldminer::CreateGold(1000.0f, 530.0f);
-    goldminer::CreateDiamond(200.0f, 300.0f);
-    goldminer::CreateRock(400.0f, 520.0f);
-    goldminer::CreateTreasureChest(600.0f, 520.0f);
-
     // Load main menu image
     SDL_Texture* menuTexture = IMG_LoadTexture(renderer, "res/menu_screen.png");
     if (!menuTexture) {
@@ -54,6 +41,12 @@ int main() {
     bool running = true;
     SDL_Event e;
 
+    // Initialize debug drawing with your renderer
+    InitDebugDraw(renderer);
+    goldminer::initBox2DWorld();
+    // Load sprite textures from "res" folder
+    LoadAllSprites(renderer);
+
     while (running) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_EVENT_QUIT) {
@@ -64,7 +57,7 @@ int main() {
 
                 if (gameState == GameState::MainMenu && key == SDLK_RETURN) {
                     // Start the game
-                    goldminer::initBox2DWorld();
+                    // Create some initial entities
                     goldminer::CreatePlayer(1);
                     goldminer::CreateRope(1);
                     goldminer::CreateGold(100.0f, 500.0f);
@@ -106,11 +99,6 @@ int main() {
             constexpr int positionIterations = 3;
             b2World_Step(goldminer::gWorld, timeStep, velocityIterations);
 
-        // Render ECS entities
-        goldminer::RenderSystem(renderer);
-        goldminer::RopeRenderSystem(renderer);
-        goldminer::Box2DDebugRenderSystem(renderer); //not redundant
-
             // Draw background
             SDL_FRect bg = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg);
@@ -118,6 +106,8 @@ int main() {
             // Render ECS entities
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
+            goldminer::Box2DDebugRenderSystem(renderer); //not redundant
+
         }
 
         SDL_RenderPresent(renderer);
