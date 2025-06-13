@@ -67,11 +67,45 @@ namespace goldminer {
     id_type CreateRope(int playerID) {
         Entity e = Entity::create();
 
-        // Visual size and position
-        float startX = 620.0f;
-        float startY = 100.0f;
-        constexpr float PPM = 50.0f;
+        // Find player position
+        Position playerPos;
+        bool foundPlayer = false;
 
+        Mask playerMask;
+        playerMask.set(Component<Position>::Bit);
+        playerMask.set(Component<PlayerInfo>::Bit);
+
+        for (id_type id = 0; id <= World::maxId().id; ++id) {
+            ent_type ent{id};
+            if (!World::mask(ent).test(playerMask)) continue;
+
+            const auto& pinfo = World::getComponent<PlayerInfo>(ent);
+            if (pinfo.playerID == playerID) {
+                playerPos = World::getComponent<Position>(ent);
+                foundPlayer = true;
+                break;
+            }
+        }
+
+        if (!foundPlayer) {
+            std::cerr << "[CreateRope] ERROR: Could not find player " << playerID << " to attach rope!\n";
+            return -1;
+        }
+
+        // Get player sprite size
+        SDL_Rect rect = GetSpriteSrcRect(SPRITE_PLAYER_IDLE);
+        float playerWidth = rect.w;
+        float playerHeight = rect.h;
+
+        // Compute winch offset visually
+        float winchOffsetX = playerWidth * 0.001f;; // adjust this visually!
+        float winchOffsetY = playerHeight*1.1;                     // adjust this visually!
+
+        // Compute rope start position
+        float startX = playerPos.x - winchOffsetX;
+        float startY = playerPos.y + winchOffsetY;
+
+        constexpr float PPM = 50.0f;
         float centerX = startX;
         float centerY = startY;
 
@@ -84,21 +118,20 @@ namespace goldminer {
         b2BodyId bodyId = b2CreateBody(gWorld, &bodyDef);
         b2Body_EnableHitEvents(bodyId, true);
 
-        // Circle shape (like Pong ball)
+        // Circle shape
         b2ShapeDef shapeDef = b2DefaultShapeDef();
         shapeDef.density = 1.0f;
         shapeDef.material.friction = 0.5f;
         shapeDef.material.restitution = 0.2f;
         shapeDef.enableHitEvents = true;
-        shapeDef.isSensor = false; // Important for physical collision
-
+        shapeDef.isSensor = false;
 
         b2Circle circle;
         circle.center = {0.0f, 0.0f};
         circle.radius = 0.2f;
 
         b2CreateCircleShape(bodyId, &shapeDef, &circle);
-        b2Body_SetLinearVelocity(bodyId, {0.0f, 1.0f}); // Downward motion
+        b2Body_SetLinearVelocity(bodyId, {0.0f, 0.0f}); // No initial motion
         b2Body_SetUserData(bodyId, new ent_type{e.entity()});
 
         e.addAll(
@@ -112,10 +145,13 @@ namespace goldminer {
                 PhysicsBody{bodyId}
         );
 
+        std::cout << "[CreateRope] Rope created at (" << startX << ", " << startY << ")\n";
+
         return e.entity().id;
     }
 
-/**
+
+    /**
  * @brief Creates a gold item at the given coordinates.
  */
     id_type CreateGold(float x, float y) {
@@ -523,19 +559,116 @@ namespace goldminer {
  * @brief Oscillates rope entities that are currently at rest.
  */
     void RopeSwingSystem() {
-        Mask mask;
-        mask.set(Component<RoperTag>::Bit);
-        mask.set(Component<Rotation>::Bit);
-        mask.set(Component<RopeControl>::Bit);
+        static std::unordered_map<id_type, float> swingDirections;
+
+        Mask ropeMask;
+        ropeMask.set(Component<RoperTag>::Bit);
+        ropeMask.set(Component<Rotation>::Bit);
+        ropeMask.set(Component<RopeControl>::Bit);
+        ropeMask.set(Component<PhysicsBody>::Bit);
+        ropeMask.set(Component<PlayerInfo>::Bit);
+
+        Mask playerMask;
+        playerMask.set(Component<Position>::Bit);
+        playerMask.set(Component<PlayerInfo>::Bit);
+
+        const float maxSwingAngle = 75.0f; // Bigger swing range → looks better
+        const float swingSpeed = 90.0f;    // degrees per second → faster swing
+        const float deltaTime = 1.0f / 60.0f; // assuming ~60 FPS fixed timestep
+
+        constexpr float PPM = 50.0f;
+        constexpr float ropeLength = 80.0f; // rope visible length → tune visually
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
-            ent_type ent{id};
-            if (!World::mask(ent).test(mask)) continue;
-            // No logic implemented yet
+            ent_type rope{id};
+            if (!World::mask(rope).test(ropeMask)) continue;
+
+            auto& rotation = World::getComponent<Rotation>(rope);
+            auto& ropeControl = World::getComponent<RopeControl>(rope);
+            auto& phys = World::getComponent<PhysicsBody>(rope);
+            auto& ropePlayerInfo = World::getComponent<PlayerInfo>(rope);
+
+            if (ropeControl.state == RopeControl::State::AtRest) {
+                // Initialize swing direction if first time
+                if (swingDirections.find(id) == swingDirections.end()) {
+                    swingDirections[id] = 1.0f;
+                }
+
+                // Update angle
+                rotation.angle += swingDirections[id] * swingSpeed * deltaTime;
+
+                // Clamp angle and reverse direction
+                if (rotation.angle > maxSwingAngle) {
+                    rotation.angle = maxSwingAngle;
+                    swingDirections[id] = -1.0f;
+                } else if (rotation.angle < -maxSwingAngle) {
+                    rotation.angle = -maxSwingAngle;
+                    swingDirections[id] = 1.0f;
+                }
+
+                // Find matching player
+                Position playerPos{};
+                bool foundPlayer = false;
+
+                for (id_type pid = 0; pid <= World::maxId().id; ++pid) {
+                    ent_type player{pid};
+                    if (!World::mask(player).test(playerMask)) continue;
+
+                    const auto& playerInfo = World::getComponent<PlayerInfo>(player);
+                    if (playerInfo.playerID == ropePlayerInfo.playerID) {
+                        playerPos = World::getComponent<Position>(player);
+                        foundPlayer = true;
+                        break;
+                    }
+                }
+
+                if (!foundPlayer) {
+                    std::cerr << "[RopeSwingSystem] ERROR: Could not find player for rope " << id << "\n";
+                    continue;
+                }
+
+                // Use the same winch offset as your current CreateRope()
+                SDL_Rect rect = GetSpriteSrcRect(SPRITE_PLAYER_IDLE);
+                float playerWidth = rect.w;
+                float playerHeight = rect.h;
+
+                float winchOffsetX = -playerWidth * 0.001f;
+                float winchOffsetY = playerHeight * 1.1f;
+
+                // Starting point of the rope
+                float originX = playerPos.x + winchOffsetX;
+                float originY = playerPos.y + winchOffsetY;
+
+                // Compute tip position based on swing angle (downwards)
+                float angleRad = rotation.angle * (M_PI / 180.0f);
+
+                float tipX = originX + ropeLength * sin(angleRad);
+                float tipY = originY + ropeLength * cos(angleRad);
+
+                // Update rope body position to match swing tip
+                b2Transform tf = b2Body_GetTransform(phys.bodyId);
+                tf.p.x = tipX / PPM;
+                tf.p.y = tipY / PPM;
+                b2Body_SetTransform(phys.bodyId, tf.p, tf.q);
+
+                // Disable gravity while swinging
+                b2Body_SetLinearVelocity(phys.bodyId, {0.0f, 0.0f});
+                b2Body_SetGravityScale(phys.bodyId, 0.0f);
+
+                // Debug print
+                std::cout << "[RopeSwingSystem] Rope " << id
+                          << " angle=" << rotation.angle
+                          << " tip=(" << tipX << ", " << tipY << ")\n";
+            }
+            else {
+                // Not at rest → allow gravity
+                b2Body_SetGravityScale(phys.bodyId, 1.0f);
+            }
         }
     }
 
-/**
+
+    /**
  * @brief Handles rope extension and retraction logic.
  */
     void RopeExtensionSystem() {
@@ -838,7 +971,7 @@ namespace goldminer {
 
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderLine(renderer,
-                               playerPos.x + 80, playerPos.y + 80,  // Approx. center of player
+                               playerPos.x +40 , playerPos.y + 120,  // Approx. center of player
                                ropeTip.x, ropeTip.y);               // From Box2D rope center
 
                 break;
