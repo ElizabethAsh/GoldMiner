@@ -30,40 +30,40 @@ namespace goldminer {
     }
 
 
-//----------------------------------
-/// @section Entity Creation Functions
-//----------------------------------
+    //----------------------------------
+    /// @section Entity Creation Functions
+    //----------------------------------
 
-/**
- * @brief Creates a new player entity with base components.
- * @param playerID The identifier of the player.
- * @return The ID of the created entity.
- */
+    /**
+     * @brief Creates a new player entity with base components.
+     * @param playerID The identifier of the player.
+     * @return The ID of the created entity.
+     */
     id_type CreatePlayer(int playerID) {
         Entity e = Entity::create();
         e.addAll(Position{570.0f, 10.0f}, Velocity{}, Renderable{SPRITE_PLAYER_IDLE}, PlayerInfo{playerID}, Score{0}, PlayerInput{});
         return e.entity().id;
     }
 
-/**
- * @brief Creates a dynamic rope entity with a narrow rectangle body for collision testing.
- *
- * This version of the rope includes a Box2D dynamic body, allowing it to interact
- * with static objects such as gold, rocks, and treasure chests. The shape is a
- * narrow vertical rectangle (thin rope), with collision enabled.
- *
- * Components added:
- * - Position: top-left (for rendering)
- * - Rotation: (optional for future use)
- * - Length: logical rope length
- * - RopeControl, RoperTag: identify as rope
- * - Collidable: enables collision system
- * - PhysicsBody: Box2D body handle
- * - PlayerInfo: for multi-player logic
- *
- * @param playerID The rope's owning player
- * @return Entity ID
- */
+    /**
+     * @brief Creates a dynamic rope entity with a narrow rectangle body for collision testing.
+     *
+     * This version of the rope includes a Box2D dynamic body, allowing it to interact
+     * with static objects such as gold, rocks, and treasure chests. The shape is a
+     * narrow vertical rectangle (thin rope), with collision enabled.
+     *
+     * Components added:
+     * - Position: top-left (for rendering)
+     * - Rotation: (optional for future use)
+     * - Length: logical rope length
+     * - RopeControl, RoperTag: identify as rope
+     * - Collidable: enables collision system
+     * - PhysicsBody: Box2D body handle
+     * - PlayerInfo: for multi-player logic
+     *
+     * @param playerID The rope's owning player
+     * @return Entity ID
+     */
     id_type CreateRope(int playerID) {
         Entity e = Entity::create();
 
@@ -115,9 +115,9 @@ namespace goldminer {
         return e.entity().id;
     }
 
-/**
- * @brief Creates a gold item at the given coordinates.
- */
+    /**
+     * @brief Creates a gold item at the given coordinates.
+     */
     id_type CreateGold(float x, float y) {
         Entity e = Entity::create();
 
@@ -173,25 +173,25 @@ namespace goldminer {
     }
 
 
-/**
- * @brief Creates a rock entity using a 6-vertex polygon to match its visual shape.
- *
- * This function generates a static physics body shaped like the visible rock sprite.
- * The hitbox uses 6 vertices to closely follow the stone's curved silhouette,
- * allowing more accurate collision detection than a simple rectangle.
- *
- * Components added:
- * - Position: screen-space top-left pixel coordinates
- * - Renderable: uses SPRITE_ROCK
- * - Collidable: for collision detection
- * - PhysicsBody: holds the Box2D body
- * - ItemType: set to Rock
- * - Value, Weight, PlayerInfo: standard properties
- *
- * @param x The top-left x position on screen in pixels.
- * @param y The top-left y position on screen in pixels.
- * @return The ID of the created entity.
- */
+    /**
+     * @brief Creates a rock entity using a 6-vertex polygon to match its visual shape.
+     *
+     * This function generates a static physics body shaped like the visible rock sprite.
+     * The hitbox uses 6 vertices to closely follow the stone's curved silhouette,
+     * allowing more accurate collision detection than a simple rectangle.
+     *
+     * Components added:
+     * - Position: screen-space top-left pixel coordinates
+     * - Renderable: uses SPRITE_ROCK
+     * - Collidable: for collision detection
+     * - PhysicsBody: holds the Box2D body
+     * - ItemType: set to Rock
+     * - Value, Weight, PlayerInfo: standard properties
+     *
+     * @param x The top-left x position on screen in pixels.
+     * @param y The top-left y position on screen in pixels.
+     * @return The ID of the created entity.
+     */
     id_type CreateRock(float x, float y) {
         Entity e = Entity::create();
 
@@ -246,25 +246,25 @@ namespace goldminer {
         return e.entity().id;
     }
 
-/**
- * @brief Creates a diamond entity using a 6-vertex polygon matching the visual sprite shape.
- *
- * The diamond is represented as a static Box2D body shaped like a stylized gemstone:
- * flat top, tapered sides, and a pointed bottom.
- * This allows more accurate collision detection than a circle or rectangle.
- *
- * Components added:
- * - Position: top-left pixel coordinate (for rendering)
- * - Renderable: uses SPRITE_DIAMOND
- * - Collidable: for collision
- * - PhysicsBody: holds Box2D body ID
- * - ItemType: set to Diamond
- * - Value, Weight, PlayerInfo: game logic metadata
- *
- * @param x Top-left x pixel coordinate
- * @param y Top-left y pixel coordinate
- * @return ID of the created entity
- */
+    /**
+     * @brief Creates a diamond entity using a 6-vertex polygon matching the visual sprite shape.
+     *
+     * The diamond is represented as a static Box2D body shaped like a stylized gemstone:
+     * flat top, tapered sides, and a pointed bottom.
+     * This allows more accurate collision detection than a circle or rectangle.
+     *
+     * Components added:
+     * - Position: top-left pixel coordinate (for rendering)
+     * - Renderable: uses SPRITE_DIAMOND
+     * - Collidable: for collision
+     * - PhysicsBody: holds Box2D body ID
+     * - ItemType: set to Diamond
+     * - Value, Weight, PlayerInfo: game logic metadata
+     *
+     * @param x Top-left x pixel coordinate
+     * @param y Top-left y pixel coordinate
+     * @return ID of the created entity
+     */
     id_type CreateDiamond(float x, float y) {
         Entity e = Entity::create();
 
@@ -429,11 +429,11 @@ namespace goldminer {
 
         // Five-point polygon that mimics the mystery sack
         b2Vec2 verts[5] = {
-                { 0.0f, -hh * 0.9f },    // top (tie)
-                { -hw * 0.8f, -hh * 0.3f }, // upper left
-                { -hw, hh * 0.6f },        // bottom left
-                { hw, hh * 0.6f },         // bottom right
-                { hw * 0.8f, -hh * 0.3f }  // upper right
+            { 0.0f, -hh * 0.9f },    // top (tie)
+            { -hw * 0.8f, -hh * 0.3f }, // upper left
+            { -hw, hh * 0.6f },        // bottom left
+            { hw, hh * 0.6f },         // bottom right
+            { hw * 0.8f, -hh * 0.3f }  // upper right
         };
 
         b2Polygon sackShape = {};
@@ -460,36 +460,36 @@ namespace goldminer {
         return e.entity().id;
     }
 
-/**
- * @brief Creates the game timer entity.
- */
+    /**
+     * @brief Creates the game timer entity.
+     */
     id_type CreateTimer() {
         Entity e = Entity::create();
         e.add(GameTimer{60.0f});
         return e.entity().id;
     }
 
-/**
- * @brief Creates a UI entity for a given player.
- */
+    /**
+     * @brief Creates a UI entity for a given player.
+     */
     id_type CreateUIEntity(int playerID) {
         Entity e = Entity::create();
         e.addAll(UIComponent{0}, PlayerInfo{playerID});
         return e.entity().id;
     }
 
-/**
- * @brief Creates a mole entity at the given position.
- */
+    /**
+     * @brief Creates a mole entity at the given position.
+     */
     id_type CreateMole(float x, float y) {
         Entity e = Entity::create();
         e.addAll(Position{x, y}, Velocity{1.5f, 0.0f}, Renderable{5}, Mole{100.0f, true}, Collidable{});
         return e.entity().id;
     }
 
-//----------------------------------
-/// @section System Implementations (Skeletons)
-//----------------------------------
+    //----------------------------------
+    /// @section System Implementations (Skeletons)
+    //----------------------------------
 
 
     /**
@@ -519,9 +519,9 @@ namespace goldminer {
             input.sendRope = spacePressed;
         }
     }
-/**
- * @brief Oscillates rope entities that are currently at rest.
- */
+    /**
+     * @brief Oscillates rope entities that are currently at rest.
+     */
     void RopeSwingSystem() {
         Mask mask;
         mask.set(Component<RoperTag>::Bit);
@@ -535,9 +535,9 @@ namespace goldminer {
         }
     }
 
-/**
- * @brief Handles rope extension and retraction logic.
- */
+    /**
+     * @brief Handles rope extension and retraction logic.
+     */
     void RopeExtensionSystem() {
         Mask mask;
         mask.set(Component<RoperTag>::Bit);
@@ -553,14 +553,14 @@ namespace goldminer {
         }
     }
 
-/**
- * @brief Detects and handles hit events between entities using Box2D's Hit system.
- *
- * This system listens to Box2D's hit events to identify when the rope
- * hits any item like diamond, gold, rock, etc. It uses user data to identify the ECS entities.
- *
- * Prerequisite: You must enable hit events on the relevant bodies using b2Body_EnableHitEvents().
- */
+    /**
+     * @brief Detects and handles hit events between entities using Box2D's Hit system.
+     *
+     * This system listens to Box2D's hit events to identify when the rope
+     * hits any item like diamond, gold, rock, etc. It uses user data to identify the ECS entities.
+     *
+     * Prerequisite: You must enable hit events on the relevant bodies using b2Body_EnableHitEvents().
+     */
 
     void CollisionSystem() {
         std::cout << "\n[CollisionSystem] Checking Box2D hit events...\n";
@@ -676,9 +676,9 @@ namespace goldminer {
         }
     }
 
-/**
- * @brief Adds score to players based on collected items.
- */
+    /**
+     * @brief Adds score to players based on collected items.
+     */
     void ScoreSystem() {
         Mask mask;
         mask.set(Component<ItemType>::Bit);
@@ -694,9 +694,9 @@ namespace goldminer {
         }
     }
 
-/**
- * @brief Assigns random value to mystery bag items when collected.
- */
+    /**
+     * @brief Assigns random value to mystery bag items when collected.
+     */
     void TreasureChestSystem() {
         Mask mask;
         mask.set(Component<PlayerInfo>::Bit);
@@ -709,9 +709,9 @@ namespace goldminer {
         }
     }
 
-/**
- * @brief Renders all entities with a position and sprite.
- */
+    /**
+     * @brief Renders all entities with a position and sprite.
+     */
     void RenderSystem(SDL_Renderer* renderer) {
         using namespace bagel;
         using namespace goldminer;
@@ -765,19 +765,19 @@ namespace goldminer {
  *
  * @param renderer The SDL renderer used for drawing.
  */
-/**
- * @brief Draws rope lines for all rope entities using their Box2D position.
- *
- * This system draws a black line between the player's center and the Box2D body
- * of the rope. It avoids relying on the Position component, which may be offset
- * for sprite rendering purposes.
- *
- * Requirements:
- * - Rope entity must have: RoperTag, PhysicsBody, PlayerInfo.
- * - Player entity must have: Position, PlayerInfo.
- *
- * @param renderer The SDL renderer used for drawing.
- */
+    /**
+     * @brief Draws rope lines for all rope entities using their Box2D position.
+     *
+     * This system draws a black line between the player's center and the Box2D body
+     * of the rope. It avoids relying on the Position component, which may be offset
+     * for sprite rendering purposes.
+     *
+     * Requirements:
+     * - Rope entity must have: RoperTag, PhysicsBody, PlayerInfo.
+     * - Player entity must have: Position, PlayerInfo.
+     *
+     * @param renderer The SDL renderer used for drawing.
+     */
     void RopeRenderSystem(SDL_Renderer* renderer) {
         using namespace bagel;
         using namespace goldminer;
@@ -801,14 +801,14 @@ namespace goldminer {
                 const auto& phys = bagel::World::getComponent<goldminer::PhysicsBody>(ent);
                 b2Transform tf = b2Body_GetTransform(phys.bodyId);
                 std::cout << "ROPE at: " << tf.p.x * 50 << ", " << tf.p.y * 50 << std::endl;
-            }
+                }
 
             if (bagel::World::mask(ent).test(bagel::Component<goldminer::ItemType>::Bit) &&
                 bagel::World::mask(ent).test(bagel::Component<goldminer::PhysicsBody>::Bit)) {
                 const auto& phys = bagel::World::getComponent<goldminer::PhysicsBody>(ent);
                 b2Transform tf = b2Body_GetTransform(phys.bodyId);
                 std::cout << "ITEM at: " << tf.p.x * 50 << ", " << tf.p.y * 50 << std::endl;
-            }
+                }
         }
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
@@ -822,9 +822,9 @@ namespace goldminer {
 
             b2Transform tf = b2Body_GetTransform(phys.bodyId);
             SDL_FPoint ropeTip = {
-                    tf.p.x * PPM,
-                    tf.p.y * PPM
-            };
+                tf.p.x * PPM,
+                tf.p.y * PPM
+        };
 
             // Find the matching player
             for (id_type pid = 0; pid <= World::maxId().id; ++pid) {
@@ -864,25 +864,25 @@ namespace goldminer {
         constexpr float scale = 1.0f; // Adjust this if rendering uses a scale
 
         return SDL_FPoint{
-                (width * scale) / 2.0f,
-                (height * scale) / 2.0f
-        };
+            (width * scale) / 2.0f,
+            (height * scale) / 2.0f
+    };
     }
 
-/**
- * @brief Synchronizes ECS Position components with their Box2D physics bodies.
- *
- * This system updates the Position (in pixels, top-left) of entities that have
- * both PhysicsBody and Renderable components. It uses the Box2D transform (center-based)
- * and applies an offset based on the sprite's size to align rendering with SDL.
- *
- * Requirements:
- * - Components: PhysicsBody, Position, Renderable
- *
- * Notes:
- * - Assumes PIXELS_PER_METER is defined globally.
- * - This system is essential for aligning sprite rendering with physics movement.
- */
+    /**
+     * @brief Synchronizes ECS Position components with their Box2D physics bodies.
+     *
+     * This system updates the Position (in pixels, top-left) of entities that have
+     * both PhysicsBody and Renderable components. It uses the Box2D transform (center-based)
+     * and applies an offset based on the sprite's size to align rendering with SDL.
+     *
+     * Requirements:
+     * - Components: PhysicsBody, Position, Renderable
+     *
+     * Notes:
+     * - Assumes PIXELS_PER_METER is defined globally.
+     * - This system is essential for aligning sprite rendering with physics movement.
+     */
     void PhysicsSyncSystem() {
         using namespace bagel;
 
@@ -925,23 +925,124 @@ namespace goldminer {
         }
     }
 
-/**
- * @brief Displays score and time for each player.
- */
-    void UISystem() {
-        Mask mask;
-        mask.set(Component<UIComponent>::Bit);
+    void DrawNumber(SDL_Renderer* renderer, int number, float x, float y) {
+        std::string numStr = std::to_string(number);
+        float offsetX = x;
 
-        Mask optional;
-        optional.set(Component<Score>::Bit);
-        optional.set(Component<PlayerInfo>::Bit);
+        for (char c : numStr) {
+            int digit = c - '0';
+            SpriteID spriteID = static_cast<SpriteID>(SPRITE_DIGIT_0 + digit);
 
-        for (id_type id = 0; id <= World::maxId().id; ++id) {
-            ent_type ent{id};
-            if (!World::mask(ent).test(mask)) continue;
-            // No logic implemented yet
+            SDL_Texture* tex = GetSpriteTexture(spriteID);
+            SDL_Rect src = GetSpriteSrcRect(spriteID);
+            SDL_FRect dst = {offsetX, y, (float)src.w, (float)src.h};
+            SDL_FRect srcF = { (float)src.x, (float)src.y, (float)src.w, (float)src.h };
+
+            SDL_RenderTexture(renderer, tex, &srcF, &dst);
+
+            offsetX += src.w + 4; // מרווח בין ספרות
         }
     }
+
+
+
+      /**
+     * @brief Renders the score and remaining time for each player using digit sprites.
+     *
+     * This system loops through all UI entities (entities with UIComponent and PlayerInfo),
+     * and for each player, it draws:
+     * - The money icon + their current score
+     * - The time icon + their remaining time
+     *
+     * Each player's data is matched by their PlayerInfo.playerID field.
+     * The score and timer are drawn using digit sprites (SPRITE_DIGIT_0 to SPRITE_DIGIT_9),
+     * instead of dynamic fonts.
+     *
+     * Sprite assets used:
+     * - SPRITE_TITLE_MONEY: Icon shown before the score
+     * - SPRITE_TITLE_TIME: Icon shown before the timer
+     * - SPRITE_DIGIT_0 ... SPRITE_DIGIT_9: Used to render numeric values
+     *
+     * Expected components:
+     * - UI entities: UIComponent, PlayerInfo
+     * - Score entities: Score, PlayerInfo
+     * - Timer entities: GameTimer, PlayerInfo
+     *
+     * @param renderer Pointer to the SDL_Renderer used for rendering
+     */
+    void UISystem(SDL_Renderer* renderer) {
+        using namespace bagel;
+        using namespace goldminer;
+
+        constexpr float UI_BASE_Y = 20.0f;
+        constexpr float PLAYER_UI_SPACING_X = 300.0f;
+        constexpr float ICON_SPACING = 10.0f;
+
+        Mask uiMask;
+        uiMask.set(Component<UIComponent>::Bit);
+        uiMask.set(Component<PlayerInfo>::Bit);
+
+        Mask scoreMask;
+        scoreMask.set(Component<Score>::Bit);
+        scoreMask.set(Component<PlayerInfo>::Bit);
+
+        Mask timerMask;
+        timerMask.set(Component<GameTimer>::Bit);
+        timerMask.set(Component<PlayerInfo>::Bit);
+
+        for (id_type id = 0; id <= World::maxId().id; ++id) {
+            ent_type uiEnt{id};
+            if (!World::mask(uiEnt).test(uiMask)) continue;
+
+            const PlayerInfo& uiPlayer = World::getComponent<PlayerInfo>(uiEnt);
+            int pid = uiPlayer.playerID;
+
+            float offsetX = 20.0f + pid * PLAYER_UI_SPACING_X;
+
+            // === Score ===
+            SDL_Texture* moneyIcon = GetSpriteTexture(SPRITE_TITLE_MONEY);
+            SDL_Rect moneySrc = GetSpriteSrcRect(SPRITE_TITLE_MONEY);
+            SDL_FRect moneyDst = {offsetX, UI_BASE_Y, (float)moneySrc.w, (float)moneySrc.h};
+            SDL_FRect moneySrcF = {(float)moneySrc.x, (float)moneySrc.y, (float)moneySrc.w, (float)moneySrc.h};
+            SDL_RenderTexture(renderer, moneyIcon, &moneySrcF, &moneyDst);
+
+            for (id_type sid = 0; sid <= World::maxId().id; ++sid) {
+                ent_type scoreEnt{sid};
+                if (!World::mask(scoreEnt).test(scoreMask)) continue;
+
+                const PlayerInfo& scorePlayer = World::getComponent<PlayerInfo>(scoreEnt);
+                if (scorePlayer.playerID != pid) continue;
+
+                const Score& score = World::getComponent<Score>(scoreEnt);
+                DrawNumber(renderer, score.points, moneyDst.x + moneyDst.w + ICON_SPACING, moneyDst.y);
+                break;
+            }
+
+            // === Time ===
+            SDL_Texture* timeIcon = GetSpriteTexture(SPRITE_TITLE_TIME);
+            SDL_Rect timeSrc = GetSpriteSrcRect(SPRITE_TITLE_TIME);
+            SDL_FRect timeDst = {offsetX, UI_BASE_Y + 60.0f, (float)timeSrc.w, (float)timeSrc.h};
+            SDL_FRect timeSrcF = {(float)timeSrc.x, (float)timeSrc.y, (float)timeSrc.w, (float)timeSrc.h};
+            SDL_RenderTexture(renderer, timeIcon, &timeSrcF, &timeDst);
+
+            for (id_type tid = 0; tid <= World::maxId().id; ++tid) {
+                ent_type timerEnt{tid};
+                if (!World::mask(timerEnt).test(timerMask)) continue;
+
+                const PlayerInfo& timerPlayer = World::getComponent<PlayerInfo>(timerEnt);
+                if (timerPlayer.playerID != pid) continue;
+
+                const GameTimer& timer = World::getComponent<GameTimer>(timerEnt);
+                int seconds = (int)std::ceil(timer.timeLeft);
+                DrawNumber(renderer, seconds, timeDst.x + timeDst.w + ICON_SPACING, timeDst.y);
+
+                break;
+            }
+        }
+
+    }
+
+
 
 /**
  * @brief Controls the mole's horizontal movement.

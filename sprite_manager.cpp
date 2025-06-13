@@ -23,6 +23,8 @@ void LoadAllSprites(SDL_Renderer* renderer) {
     gTextures[SPRITE_PLAYER_IDLE] = LoadTexture(renderer, "res/player.png");
     gTextures[SPRITE_BACKGROUND] = LoadTexture(renderer, "res/background.png");
     gTextures[SPRITE_TREASURE_CHEST] = LoadTexture(renderer, "res/treasureChest.png");
+    gTextures[SPRITE_TITLE_MONEY] = LoadTexture(renderer, "res/titleMoney.png");
+    gTextures[SPRITE_TITLE_TIME]  = LoadTexture(renderer, "res/titleTime.png");
 
 
 
@@ -34,7 +36,38 @@ void LoadAllSprites(SDL_Renderer* renderer) {
     gSrcRects[SPRITE_PLAYER_IDLE] = {0, 7, 164, 169};
     gSrcRects[SPRITE_BACKGROUND] = {0, 0, 1280, 720};
     gSrcRects[SPRITE_TREASURE_CHEST] = {33, 50, 88, 82};
+    gSrcRects[SPRITE_TITLE_MONEY] = {0, 0, 112, 32};
+    gSrcRects[SPRITE_TITLE_TIME]  = {0, 0, 83, 25};
 
+    LoadDigitSprite(renderer);
+
+
+}
+
+void LoadDigitSprite(SDL_Renderer* renderer) {
+    SDL_Texture* digitsTexture = LoadTexture(renderer, "res/numbers.png");
+
+    gTextures[SPRITE_DIGIT_0] = digitsTexture;
+    gTextures[SPRITE_DIGIT_1] = digitsTexture;
+    gTextures[SPRITE_DIGIT_2] = digitsTexture;
+    gTextures[SPRITE_DIGIT_3] = digitsTexture;
+    gTextures[SPRITE_DIGIT_4] = digitsTexture;
+    gTextures[SPRITE_DIGIT_5] = digitsTexture;
+    gTextures[SPRITE_DIGIT_6] = digitsTexture;
+    gTextures[SPRITE_DIGIT_7] = digitsTexture;
+    gTextures[SPRITE_DIGIT_8] = digitsTexture;
+    gTextures[SPRITE_DIGIT_9] = digitsTexture;
+
+    gSrcRects[SPRITE_DIGIT_0] = {20, 55, 30, 52};
+    gSrcRects[SPRITE_DIGIT_1] = {61, 55, 24, 53};
+    gSrcRects[SPRITE_DIGIT_2] = {96, 55, 32, 52};
+    gSrcRects[SPRITE_DIGIT_3] = {135, 52, 31, 55};
+    gSrcRects[SPRITE_DIGIT_4] = {173, 49, 31, 58};
+    gSrcRects[SPRITE_DIGIT_5] = {19, 116, 30, 56};
+    gSrcRects[SPRITE_DIGIT_6] = {60, 115, 29, 53};
+    gSrcRects[SPRITE_DIGIT_7] = {98, 112, 28, 58};
+    gSrcRects[SPRITE_DIGIT_8] = {137, 116, 27, 55};
+    gSrcRects[SPRITE_DIGIT_9] = {175, 118, 28, 54};
 }
 
 void UnloadAllSprites() {
