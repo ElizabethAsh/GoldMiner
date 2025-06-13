@@ -135,6 +135,7 @@ namespace goldminer {
     void PhysicsSyncSystem();
     void DebugCollisionSystem();
     void RopeRenderSystem(SDL_Renderer* renderer);
+    void Box2DDebugRenderSystem(SDL_Renderer* renderer);
 
 //----------------------------------
 /// @section Entity Creation

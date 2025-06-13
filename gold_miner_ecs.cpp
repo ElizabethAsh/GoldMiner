@@ -7,8 +7,10 @@
 #include "sprite_manager.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
-
+#include <cmath>
 #include <iostream>
+#include "debug_draw.h"
+
 
 namespace goldminer {
     b2WorldId gWorld = b2_nullWorldId;
@@ -19,8 +21,12 @@ namespace goldminer {
         b2WorldDef worldDef = b2DefaultWorldDef();
         worldDef.gravity = { 0.0f, 9.8f };
         gWorld = b2CreateWorld(&worldDef);
-        b2World_SetHitEventThreshold(gWorld, 0.1f);
+        b2World_SetHitEventThreshold(gWorld, 0.0001f);
 
+        // This line is correct and should be called once in initBox2DWorld
+        // to associate the world with your debug draw instance.
+        // The InitDebugDraw(renderer) call should be in main.cpp after renderer creation.
+        b2World_Draw(gWorld, &gDebugDraw);
     }
 
 
@@ -61,56 +67,44 @@ namespace goldminer {
     id_type CreateRope(int playerID) {
         Entity e = Entity::create();
 
-        // Visual size in pixels
-        float ropeW = 6.0f;
-        float ropeH = 120.0f;
-
+        // Visual size and position
         float startX = 620.0f;
         float startY = 100.0f;
-
         constexpr float PPM = 50.0f;
 
-        float centerX = startX + ropeW / 2.0f;
-        float centerY = startY + ropeH / 2.0f;
-
-        float hw = ropeW / 2.0f / PPM;
-        float hh = ropeH / 2.0f / PPM;
+        float centerX = startX;
+        float centerY = startY;
 
         // Create dynamic Box2D body
         b2BodyDef bodyDef = b2DefaultBodyDef();
         bodyDef.type = b2_dynamicBody;
+        bodyDef.fixedRotation = false;
         bodyDef.position = {centerX / PPM, centerY / PPM};
-
+        bodyDef.isBullet = true;
         b2BodyId bodyId = b2CreateBody(gWorld, &bodyDef);
         b2Body_EnableHitEvents(bodyId, true);
-        b2Vec2 velocity = {0.0f, 2.0f}; // Negative Y = upward
-        b2Body_SetLinearVelocity(bodyId, velocity);
 
-
+        // Circle shape (like Pong ball)
         b2ShapeDef shapeDef = b2DefaultShapeDef();
         shapeDef.density = 1.0f;
         shapeDef.material.friction = 0.5f;
-        shapeDef.material.restitution = 0.1f;
-        shapeDef.filter.categoryBits = 0x0001;
-        shapeDef.filter.maskBits = 0xFFFF;
-
-        shapeDef.isSensor = true;
+        shapeDef.material.restitution = 0.2f;
         shapeDef.enableHitEvents = true;
+        shapeDef.isSensor = false; // Important for physical collision
 
-        b2Polygon box = {};
-        box.count = 4;
-        box.vertices[0] = { -hw, -hh };
-        box.vertices[1] = {  hw, -hh };
-        box.vertices[2] = {  hw,  hh };
-        box.vertices[3] = { -hw,  hh };
 
-        b2CreatePolygonShape(bodyId, &shapeDef, &box);
-        b2Body_SetUserData(bodyId, new bagel::ent_type{e.entity()});
+        b2Circle circle;
+        circle.center = {0.0f, 0.0f};
+        circle.radius = 0.2f;
+
+        b2CreateCircleShape(bodyId, &shapeDef, &circle);
+        b2Body_SetLinearVelocity(bodyId, {0.0f, 1.0f}); // Downward motion
+        b2Body_SetUserData(bodyId, new ent_type{e.entity()});
 
         e.addAll(
                 Position{startX, startY},
                 Rotation{0.0f},
-                Length{ropeH},
+                Length{0.0f},
                 RopeControl{},
                 RoperTag{},
                 PlayerInfo{playerID},
@@ -168,8 +162,8 @@ namespace goldminer {
                 Renderable{SPRITE_GOLD},
                 Collectable{},
                 ItemType{ItemType::Type::Gold},
-                Value{100},
-                Weight{1.0f},
+                Value{70},
+                Weight{5.0f},
                 Collidable{},
                 PlayerInfo{-1},
                 PhysicsBody{bodyId}
@@ -201,57 +195,49 @@ namespace goldminer {
     id_type CreateRock(float x, float y) {
         Entity e = Entity::create();
 
+        // Get sprite dimensions for gold
         SDL_Rect rect = GetSpriteSrcRect(SPRITE_ROCK);
         float width = static_cast<float>(rect.w);
         float height = static_cast<float>(rect.h);
 
+        // Calculate center of sprite for Box2D positioning
         float centerX = x + width / 2.0f;
         float centerY = y + height / 2.0f;
 
         constexpr float PPM = 50.0f; // Pixels per meter
-        float hw = width / 2.0f / PPM;
-        float hh = height / 2.0f / PPM;
 
+        // Define a static Box2D body at the gold's center
         b2BodyDef bodyDef = b2DefaultBodyDef();
         bodyDef.type = b2_staticBody;
         bodyDef.position = {centerX / PPM, centerY / PPM};
 
         b2BodyId bodyId = b2CreateBody(gWorld, &bodyDef);
 
+        // Create a circle shape for the gold body
         b2ShapeDef shapeDef = b2DefaultShapeDef();
         shapeDef.density = 1.0f;
-        shapeDef.material.friction = 0.6f;
+        shapeDef.material.friction = 0.3f;
         shapeDef.material.restitution = 0.1f;
         shapeDef.filter.categoryBits = 0x0001;
         shapeDef.filter.maskBits = 0xFFFF;
 
+        b2Circle circle;
+        circle.center = {0.0f, 0.0f};
+        circle.radius = (width / 2.0f) / PPM;
 
-        // Six-point polygon approximating the rock's shape
-        b2Vec2 verts[6] = {
-                { -hw * 0.6f, -hh * 0.8f }, // p0 - top-left
-                { -hw * 0.9f,  0.0f       }, // p1 - far left
-                { -hw * 0.5f,  hh * 0.9f  }, // p2 - bottom-left
-                {  hw * 0.6f,  hh * 0.9f  }, // p3 - bottom-right
-                {  hw * 0.9f,  0.0f       }, // p4 - far right
-                {  hw * 0.4f, -hh * 0.8f  }  // p5 - top-right
-        };
+        b2CreateCircleShape(bodyId, &shapeDef, &circle);
 
-        b2Polygon shape = {};
-        shape.count = 6;
-        for (int i = 0; i < 6; ++i) {
-            shape.vertices[i] = verts[i];
-        }
-
-        b2CreatePolygonShape(bodyId, &shapeDef, &shape);
+        // Attach entity ID to body for reference if needed
         b2Body_SetUserData(bodyId, new bagel::ent_type{e.entity()});
 
+        // Add ECS components to the entity
         e.addAll(
                 Position{x, y},
                 Renderable{SPRITE_ROCK},
                 Collectable{},
                 ItemType{ItemType::Type::Rock},
-                Value{10},
-                Weight{3.0f},
+                Value{100},
+                Weight{1.0f},
                 Collidable{},
                 PlayerInfo{-1},
                 PhysicsBody{bodyId}
@@ -259,7 +245,6 @@ namespace goldminer {
 
         return e.entity().id;
     }
-
 
 /**
  * @brief Creates a diamond entity using a 6-vertex polygon matching the visual sprite shape.
@@ -283,59 +268,49 @@ namespace goldminer {
     id_type CreateDiamond(float x, float y) {
         Entity e = Entity::create();
 
+        // Get sprite dimensions for gold
         SDL_Rect rect = GetSpriteSrcRect(SPRITE_DIAMOND);
-        float width = static_cast<float>(rect.w);  // ~41 px
-        float height = static_cast<float>(rect.h); // ~32 px
+        float width = static_cast<float>(rect.w);
+        float height = static_cast<float>(rect.h);
 
+        // Calculate center of sprite for Box2D positioning
         float centerX = x + width / 2.0f;
         float centerY = y + height / 2.0f;
 
-        constexpr float PPM = 50.0f;
-        float hw = width / 2.0f / PPM;
-        float hh = height / 2.0f / PPM;
+        constexpr float PPM = 50.0f; // Pixels per meter
 
+        // Define a static Box2D body at the gold's center
         b2BodyDef bodyDef = b2DefaultBodyDef();
         bodyDef.type = b2_staticBody;
         bodyDef.position = {centerX / PPM, centerY / PPM};
 
         b2BodyId bodyId = b2CreateBody(gWorld, &bodyDef);
-        b2Body_EnableHitEvents(bodyId, true);
+
+        // Create a circle shape for the gold body
         b2ShapeDef shapeDef = b2DefaultShapeDef();
         shapeDef.density = 1.0f;
-        shapeDef.material.friction = 0.4f;
-        shapeDef.material.restitution = 0.2f;
+        shapeDef.material.friction = 0.3f;
+        shapeDef.material.restitution = 0.1f;
         shapeDef.filter.categoryBits = 0x0001;
         shapeDef.filter.maskBits = 0xFFFF;
 
-        shapeDef.isSensor = true;
-        shapeDef.enableHitEvents = true;
+        b2Circle circle;
+        circle.center = {0.0f, 0.0f};
+        circle.radius = (width / 2.0f) / PPM;
 
-        // Six-point diamond shape
-        b2Vec2 verts[6] = {
-                { 0.0f,     -hh },         // top center
-                { -hw,      -hh * 0.5f },  // top-left
-                { -hw * 0.7f, hh * 0.1f }, // mid-left
-                { 0.0f,      hh },         // bottom point
-                { hw * 0.7f, hh * 0.1f },  // mid-right
-                { hw,       -hh * 0.5f }   // top-right
-        };
+        b2CreateCircleShape(bodyId, &shapeDef, &circle);
 
-        b2Polygon shape = {};
-        shape.count = 6;
-        for (int i = 0; i < 6; ++i) {
-            shape.vertices[i] = verts[i];
-        }
-
-        b2CreatePolygonShape(bodyId, &shapeDef, &shape);
+        // Attach entity ID to body for reference if needed
         b2Body_SetUserData(bodyId, new bagel::ent_type{e.entity()});
 
+        // Add ECS components to the entity
         e.addAll(
                 Position{x, y},
                 Renderable{SPRITE_DIAMOND},
                 Collectable{},
                 ItemType{ItemType::Type::Diamond},
-                Value{300},
-                Weight{0.5f},
+                Value{100},
+                Weight{1.0f},
                 Collidable{},
                 PlayerInfo{-1},
                 PhysicsBody{bodyId}
@@ -370,61 +345,49 @@ namespace goldminer {
     id_type CreateTreasureChest(float x, float y) {
         Entity e = Entity::create();
 
+        // Get sprite dimensions for gold
         SDL_Rect rect = GetSpriteSrcRect(SPRITE_TREASURE_CHEST);
-        float originalW = static_cast<float>(rect.w); // 356
-        float originalH = static_cast<float>(rect.h); // 447
+        float width = static_cast<float>(rect.w);
+        float height = static_cast<float>(rect.h);
 
-        constexpr float PPM = 50.0f;
+        // Calculate center of sprite for Box2D positioning
+        float centerX = x + width / 2.0f;
+        float centerY = y + height / 2.0f;
 
-        float scaledW = originalW;
-        float scaledH = originalH   ;
+        constexpr float PPM = 50.0f; // Pixels per meter
 
-        float centerX = x + scaledW / 2.0f;
-        float centerY = y + scaledH / 2.0f;
-
-        float hw = scaledW / 2.0f / PPM;
-        float hh = scaledH / 2.0f / PPM;
-
+        // Define a static Box2D body at the gold's center
         b2BodyDef bodyDef = b2DefaultBodyDef();
         bodyDef.type = b2_staticBody;
         bodyDef.position = {centerX / PPM, centerY / PPM};
 
         b2BodyId bodyId = b2CreateBody(gWorld, &bodyDef);
 
+        // Create a circle shape for the gold body
         b2ShapeDef shapeDef = b2DefaultShapeDef();
         shapeDef.density = 1.0f;
-        shapeDef.material.friction = 0.5f;
+        shapeDef.material.friction = 0.3f;
         shapeDef.material.restitution = 0.1f;
         shapeDef.filter.categoryBits = 0x0001;
         shapeDef.filter.maskBits = 0xFFFF;
 
-        // Six-point polygon representing the chest outline (scaled)
-        b2Vec2 verts[6] = {
-                { -hw * 0.9f, -hh * 0.5f },   // top-left
-                { -hw * 0.7f,  hh * 0.4f },   // bottom-left
-                {  0.0f,       hh * 0.6f },   // center-bottom
-                {  hw * 0.7f,  hh * 0.4f },   // bottom-right
-                {  hw * 0.9f, -hh * 0.5f },   // top-right
-                {  0.0f,      -hh * 0.8f }    // top-center arch
-        };
+        b2Circle circle;
+        circle.center = {0.0f, 0.0f};
+        circle.radius = (width / 2.0f) / PPM;
 
-        b2Polygon shape = {};
-        shape.count = 6;
-        for (int i = 0; i < 6; ++i) {
-            shape.vertices[i] = verts[i];
-        }
+        b2CreateCircleShape(bodyId, &shapeDef, &circle);
 
-        b2CreatePolygonShape(bodyId, &shapeDef, &shape);
+        // Attach entity ID to body for reference if needed
         b2Body_SetUserData(bodyId, new bagel::ent_type{e.entity()});
 
-        // Final position stored already scaled
+        // Add ECS components to the entity
         e.addAll(
                 Position{x, y},
                 Renderable{SPRITE_TREASURE_CHEST},
                 Collectable{},
                 ItemType{ItemType::Type::TreasureChest},
-                Value{0},
-                Weight{1.0f},
+                Value{100},
+                Weight{3.0f},
                 Collidable{},
                 PlayerInfo{-1},
                 PhysicsBody{bodyId}
@@ -528,7 +491,8 @@ namespace goldminer {
 /// @section System Implementations (Skeletons)
 //----------------------------------
 
-/**
+
+    /**
  * @brief Reads player input and stores it in PlayerInput component.
  */
     void PlayerInputSystem() {
@@ -585,6 +549,7 @@ namespace goldminer {
  *
  * Prerequisite: You must enable hit events on the relevant bodies using b2Body_EnableHitEvents().
  */
+
     void CollisionSystem() {
         std::cout << "\n[CollisionSystem] Checking Box2D hit events...\n";
 
@@ -996,5 +961,8 @@ namespace goldminer {
         }
     }
 
+    void Box2DDebugRenderSystem(SDL_Renderer* renderer) {
+        b2World_Draw(gWorld, &gDebugDraw);
+    }
 
 } // namespace goldminer

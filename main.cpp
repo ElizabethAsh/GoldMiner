@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <box2d/box2d.h>
-
+#include "debug_draw.h"
 #include "gold_miner_ecs.h"
 #include "sprite_manager.h"
 #include "bagel.h"
@@ -30,10 +30,6 @@ int main() {
         std::cerr << "Renderer creation failed: " << SDL_GetError() << std::endl;
         return 1;
     }
-
-    // Load all sprites for the game
-    LoadAllSprites(renderer);
-
     // Load main menu image
     SDL_Texture* menuTexture = IMG_LoadTexture(renderer, "res/menu_screen.png");
     if (!menuTexture) {
@@ -45,6 +41,12 @@ int main() {
     bool running = true;
     SDL_Event e;
 
+    // Initialize debug drawing with your renderer
+    InitDebugDraw(renderer);
+    goldminer::initBox2DWorld();
+    // Load sprite textures from "res" folder
+    LoadAllSprites(renderer);
+
     while (running) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_EVENT_QUIT) {
@@ -55,7 +57,7 @@ int main() {
 
                 if (gameState == GameState::MainMenu && key == SDLK_RETURN) {
                     // Start the game
-                    goldminer::initBox2DWorld();
+                    // Create some initial entities
                     goldminer::CreatePlayer(1);
                     goldminer::CreateRope(1);
                     goldminer::CreateGold(100.0f, 500.0f);
@@ -72,6 +74,16 @@ int main() {
             }
         }
 
+        constexpr float timeStep = 1.0f / 120.0f;  // 120 FPS simulation
+        constexpr int velocityIterations = 12;
+        constexpr int positionIterations = 6;
+
+        b2World_Step(goldminer::gWorld, timeStep, velocityIterations);
+
+        goldminer::PhysicsSyncSystem();
+        goldminer::CollisionSystem();
+        goldminer::DebugCollisionSystem();
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
@@ -87,10 +99,6 @@ int main() {
             constexpr int positionIterations = 3;
             b2World_Step(goldminer::gWorld, timeStep, velocityIterations);
 
-            goldminer::PhysicsSyncSystem();
-            goldminer::CollisionSystem();
-            goldminer::DebugCollisionSystem();
-
             // Draw background
             SDL_FRect bg = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg);
@@ -98,6 +106,8 @@ int main() {
             // Render ECS entities
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
+            goldminer::Box2DDebugRenderSystem(renderer); //not redundant
+
         }
 
         SDL_RenderPresent(renderer);

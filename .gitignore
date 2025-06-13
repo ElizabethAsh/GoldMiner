@@ -7,3 +7,4 @@ CMakeCache.txt
 *.exe
 *.json
 *.user
+CMakeLists.txt
