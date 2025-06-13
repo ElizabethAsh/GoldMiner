@@ -71,13 +71,14 @@ int main() {
                     gameState = GameState::MainMenu;
                     // Optional: you can also reset game state here
                 }
+                else
+                    goldminer::PlayerInputSystem(&e);
             }
         }
 
         constexpr float timeStep = 1.0f / 120.0f;  // 120 FPS simulation
         constexpr int velocityIterations = 12;
         constexpr int positionIterations = 6;
-
         b2World_Step(goldminer::gWorld, timeStep, velocityIterations);
 
         goldminer::PhysicsSyncSystem();

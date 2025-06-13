@@ -102,6 +102,12 @@ namespace goldminer {
         b2BodyId bodyId;
     };
 
+    struct PlayerInput {
+        bool sendRope = false;
+        bool retractRope = false;
+    };
+
+
 //----------------------------------
 /// @section Tags
 //----------------------------------
@@ -111,16 +117,11 @@ namespace goldminer {
     struct GameOverTag {};
     struct Collidable {};
 
-    struct PlayerInput {
-        bool sendRope = false;
-        bool retractRope = false;
-    };
-
 //----------------------------------
 /// @section System Declarations
 //----------------------------------
     void initBox2DWorld();
-    void PlayerInputSystem();
+    void PlayerInputSystem(const SDL_Event* event);
     void RopeSwingSystem();
     void RopeExtensionSystem();
     void CollisionSystem();
