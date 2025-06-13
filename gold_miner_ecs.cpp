@@ -495,18 +495,30 @@ namespace goldminer {
     /**
  * @brief Reads player input and stores it in PlayerInput component.
  */
-    void PlayerInputSystem() {
+    void PlayerInputSystem(const SDL_Event* event) {
+        if (!event) return;
+
+        bool spacePressed = false;
+
+        if (event->type == SDL_EVENT_KEY_DOWN) {
+            if (event->key.key == SDLK_SPACE) {
+                spacePressed = true;
+                std::cout << "[PlayerInputSystem] Space key pressed, sending rope command.\n";
+            }
+        }
+
         Mask mask;
-        mask.set(Component<PlayerInfo>::Bit);
         mask.set(Component<PlayerInput>::Bit);
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
             ent_type ent{id};
             if (!World::mask(ent).test(mask)) continue;
-            // No logic implemented yet
+
+            auto& input = World::getComponent<PlayerInput>(ent);
+
+            input.sendRope = spacePressed;
         }
     }
-
 /**
  * @brief Oscillates rope entities that are currently at rest.
  */
