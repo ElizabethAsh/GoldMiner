@@ -10,6 +10,8 @@
 #include <cmath>
 #include <iostream>
 #include "debug_draw.h"
+#include <unordered_map>
+#include <vector>
 
 
 namespace goldminer {
@@ -128,7 +130,7 @@ namespace goldminer {
 
         b2Circle circle;
         circle.center = {0.0f, 0.0f};
-        circle.radius = 0.2f;
+        circle.radius = 0.3f;
 
         b2CreateCircleShape(bodyId, &shapeDef, &circle);
         b2Body_SetLinearVelocity(bodyId, {0.0f, 0.0f}); // No initial motion
@@ -678,13 +680,122 @@ namespace goldminer {
         mask.set(Component<Length>::Bit);
         mask.set(Component<Position>::Bit);
         mask.set(Component<PlayerInfo>::Bit);
+        mask.set(Component<PhysicsBody>::Bit);
+
+        constexpr float MAX_LENGTH = 800.0f;
+        constexpr float EXTENSION_SPEED = 600.0f; // pixels/sec
+        constexpr float RETRACTION_SPEED = 900.0f;
+        constexpr float PPM = 50.0f;
+        const float deltaTime = 1.0f / 60.0f;
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
-            ent_type ent{id};
-            if (!World::mask(ent).test(mask)) continue;
-            // No logic implemented yet
+            ent_type rope{id};
+            if (!World::mask(rope).test(mask)) continue;
+
+            auto& ropeControl = World::getComponent<RopeControl>(rope);
+            auto& length = World::getComponent<Length>(rope);
+            auto& rotation = World::getComponent<Rotation>(rope);
+            auto& phys = World::getComponent<PhysicsBody>(rope);
+            auto& ropeOwner = World::getComponent<PlayerInfo>(rope);
+
+            // Find player position
+            Position playerPos{};
+            bool foundPlayer = false;
+            Mask playerMask;
+            playerMask.set(Component<Position>::Bit);
+            playerMask.set(Component<PlayerInfo>::Bit);
+            ent_type playerEntity = {};
+            for (id_type pid = 0; pid <= World::maxId().id; ++pid) {
+                ent_type player{pid};
+                if (!World::mask(player).test(playerMask)) continue;
+                const auto& pinfo = World::getComponent<PlayerInfo>(player);
+                if (pinfo.playerID == ropeOwner.playerID) {
+                    playerPos = World::getComponent<Position>(player);
+                    playerEntity = player;
+                    foundPlayer = true;
+                    break;
+                }
+            }
+            if (!foundPlayer) continue;
+
+            // Handle input: if at rest and Enter pressed, start extending
+            auto& input = World::getComponent<PlayerInput>(playerEntity);
+            if (ropeControl.state == RopeControl::State::AtRest && input.sendRope) {
+                ropeControl.state = RopeControl::State::Extending;
+                input.sendRope = false; // consume input
+            }
+
+            // Calculate rope origin (winch)
+            SDL_Rect rect = GetSpriteSrcRect(SPRITE_PLAYER_IDLE);
+            float winchOffsetX = -rect.w * 0.001f;
+            float winchOffsetY = rect.h * 1.1f;
+            float originX = playerPos.x + winchOffsetX;
+            float originY = playerPos.y + winchOffsetY;
+
+            float angleRad = rotation.angle * (M_PI / 180.0f);
+
+            // Calculate target tip position
+            float tipX = originX + length.value * sin(angleRad);
+            float tipY = originY + length.value * cos(angleRad);
+            b2Vec2 currentPos = b2Body_GetPosition(phys.bodyId);
+            b2Vec2 targetPos = { tipX / PPM, tipY / PPM };
+            b2Vec2 direction = { targetPos.x - currentPos.x, targetPos.y - currentPos.y };
+            float dist = sqrt(direction.x * direction.x + direction.y * direction.y);
+
+
+            if (ropeControl.state == RopeControl::State::Extending) {
+                length.value += EXTENSION_SPEED * deltaTime;
+                if (length.value > MAX_LENGTH) {
+                    length.value = MAX_LENGTH;
+                    ropeControl.state = RopeControl::State::Retracting;
+                }
+                // Set velocity towards the target
+                if (dist > 0.01f) {
+                    direction.x *= EXTENSION_SPEED / PPM / dist;
+                    direction.y *= EXTENSION_SPEED / PPM / dist;
+                    b2Body_SetLinearVelocity(phys.bodyId, direction);
+                } else {
+                    b2Body_SetLinearVelocity(phys.bodyId, {0, 0});
+                }
+            }
+            else if (ropeControl.state == RopeControl::State::Retracting) {
+                length.value -= RETRACTION_SPEED * deltaTime;
+                if (length.value <= 0.0f) {
+                    length.value = 0.0f;
+                    ropeControl.state = RopeControl::State::AtRest;
+                    b2Body_SetLinearVelocity(phys.bodyId, {0, 0});
+                } else {
+                    // Set velocity back toward the origin
+                    b2Vec2 retractTarget = { originX / PPM, originY / PPM };
+                    b2Vec2 retractDir = { retractTarget.x - currentPos.x, retractTarget.y - currentPos.y };
+                    float retractDist = sqrt(retractDir.x * retractDir.x + retractDir.y * retractDir.y);
+                    if (retractDist > 0.01f) {
+                        retractDir.x *= RETRACTION_SPEED / PPM / retractDist;
+                        retractDir.y *= RETRACTION_SPEED / PPM / retractDist;
+                        b2Body_SetLinearVelocity(phys.bodyId, retractDir);
+                    } else {
+                        b2Body_SetLinearVelocity(phys.bodyId, {0, 0});
+                    }
+                }
+            }
+            else if (ropeControl.state == RopeControl::State::AtRest) {
+                // If at rest, just keep the body in place
+                b2Body_SetLinearVelocity(phys.bodyId, {0.0f, 0.0f});
+            }
+
+            // --- Joint cleanup when rope is at rest ---
+            if (ropeControl.state == RopeControl::State::AtRest & World::mask(rope).test(Component<GrabbedJoint>::Bit)) {
+                HandleRopeJointCleanup(rope);
+
+                // Reset rope physics after releasing item
+                b2Body_SetLinearVelocity(phys.bodyId, {0.0f, 0.0f});
+                b2Body_SetAngularVelocity(phys.bodyId, 0.0f);
+                b2Body_SetGravityScale(phys.bodyId, 0.0f); // or 1.0f if you want gravity at rest
+
+            }
         }
     }
+
 
 /**
  * @brief Detects and handles hit events between entities using Box2D's Hit system.
@@ -712,34 +823,59 @@ namespace goldminer {
 
         for (int i = 0; i < events.hitCount; ++i) {
             const b2ContactHitEvent &hit = events.hitEvents[i];
-
-            b2ShapeId shapeA = hit.shapeIdA;
-            b2ShapeId shapeB = hit.shapeIdB;
-
-            b2BodyId bodyA = b2Shape_GetBody(shapeA);
-            b2BodyId bodyB = b2Shape_GetBody(shapeB);
+            b2BodyId bodyA = b2Shape_GetBody(hit.shapeIdA);
+            b2BodyId bodyB = b2Shape_GetBody(hit.shapeIdB);
 
             auto *userDataA = static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyA));
             auto *userDataB = static_cast<bagel::ent_type *>(b2Body_GetUserData(bodyB));
-
             if (!userDataA || !userDataB) {
                 std::cout << "One of the entities has no user data.\n";
                 continue;
             }
 
-            bagel::ent_type entA = *userDataA;
-            bagel::ent_type entB = *userDataB;
-
+            ent_type entA = *userDataA;
+            ent_type entB = *userDataB;
             std::cout << "Hit detected between Entity " << entA.id << " and Entity " << entB.id << std::endl;
 
-            if (bagel::World::mask(entA).test(bagel::Component<Collectable>::Bit)) {
-                std::cout << "Collectable A got hit!\n";
+            // Rope vs Collectable
+            bool isRopeA = World::mask(entA).test(Component<RoperTag>::Bit);
+            bool isRopeB = World::mask(entB).test(Component<RoperTag>::Bit);
+            bool isCollectA = World::mask(entA).test(Component<Collectable>::Bit);
+            bool isCollectB = World::mask(entB).test(Component<Collectable>::Bit);
+
+            // Only grab if rope is not already holding something
+            if (isRopeA && isCollectB && !World::mask(entA).test(Component<GrabbedJoint>::Bit)) {
+                TryAttachCollectable(entA, entB);
             }
-            if (bagel::World::mask(entB).test(bagel::Component<Collectable>::Bit)) {
-                std::cout << "Collectable B got hit!\n";
+            else if (isRopeB && isCollectA && !World::mask(entB).test(Component<GrabbedJoint>::Bit)) {
+                TryAttachCollectable(entB, entA);
             }
         }
     }
+
+    void TryAttachCollectable(ent_type rope, ent_type collectable) {
+        if (World::mask(rope).test(Component<GrabbedJoint>::Bit)) return;
+
+        auto& ropePhys = World::getComponent<PhysicsBody>(rope);
+        auto& itemPhys = World::getComponent<PhysicsBody>(collectable);
+
+        b2Body_SetType(itemPhys.bodyId, b2_dynamicBody);
+
+        b2WeldJointDef jointDef = b2DefaultWeldJointDef();
+        jointDef.bodyIdA = ropePhys.bodyId;
+        jointDef.bodyIdB = itemPhys.bodyId;
+        jointDef.collideConnected = false;
+
+        b2JointId jointId = b2CreateWeldJoint(goldminer::gWorld, &jointDef);
+        World::addComponent<GrabbedJoint>(rope, GrabbedJoint{jointId, collectable.id});
+        auto& ropeControl = World::getComponent<RopeControl>(rope);
+        ropeControl.state = RopeControl::State::Retracting;
+
+        //b2Body_SetAngularDamping(itemPhys.bodyId, 5.0f);
+        b2Body_SetLinearVelocity(itemPhys.bodyId, {0, 0});
+        b2Body_SetAngularVelocity(itemPhys.bodyId, 0);
+    }
+
 
     /**
  * @brief Debug system to detect collisions approximately by comparing positions.
@@ -1109,5 +1245,70 @@ namespace goldminer {
     void Box2DDebugRenderSystem(SDL_Renderer* renderer) {
         b2World_Draw(gWorld, &gDebugDraw);
     }
+
+
+    void DestructionSystem() {
+        Mask req = MaskBuilder{}.set<DestroyTag>().build();
+
+        // // Clean up Box2D body and user data if present
+        // if (World::mask(ent).test(Component<PhysicsBody>::Bit)) {
+        //     auto& phys = World::getComponent<PhysicsBody>(ent);
+        //     if (b2Body_IsValid(phys.bodyId)) {
+        //         void* userData = b2Body_GetUserData(phys.bodyId);
+        //         if (userData) delete static_cast<bagel::ent_type*>(userData);
+        //         b2DestroyBody(phys.bodyId);
+        //         phys.bodyId = b2_nullBodyId;
+        //     }
+        // }
+
+        std::vector<ent_type> toDelete;
+        toDelete.reserve(PackedStorage<DestroyTag>::size());
+
+        for (std::size_t i = 0; i < PackedStorage<DestroyTag>::size(); ++i) {
+            ent_type e = PackedStorage<DestroyTag>::entity(i);
+            if (World::mask(e).test(req)) {
+                toDelete.push_back(e);
+            }
+        }
+
+        for (ent_type e : toDelete) {
+            std::cout << "[DestructionSystem] Destroying entity " << e.id << "\n";
+            if (World::mask(e).test(Component<Position>::Bit)) World::delComponent<Position>(e);
+            if (World::mask(e).test(Component<Velocity>::Bit)) World::delComponent<Velocity>(e);
+            if (World::mask(e).test(Component<Rotation>::Bit)) World::delComponent<Rotation>(e);
+            if (World::mask(e).test(Component<Length>::Bit)) World::delComponent<Length>(e);
+            if (World::mask(e).test(Component<Renderable>::Bit)) World::delComponent<Renderable>(e);
+            if (World::mask(e).test(Component<PlayerInfo>::Bit)) World::delComponent<PlayerInfo>(e);
+            if (World::mask(e).test(Component<RopeControl>::Bit)) World::delComponent<RopeControl>(e);
+            if (World::mask(e).test(Component<ItemType>::Bit)) World::delComponent<ItemType>(e);
+            if (World::mask(e).test(Component<Value>::Bit)) World::delComponent<Value>(e);
+            if (World::mask(e).test(Component<Weight>::Bit)) World::delComponent<Weight>(e);
+            if (World::mask(e).test(Component<GrabbedJoint>::Bit)) World::delComponent<GrabbedJoint>(e);
+            if (World::mask(e).test(Component<PhysicsBody>::Bit)) World::delComponent<PhysicsBody>(e);
+            if (World::mask(e).test(Component<PlayerInput>::Bit)) World::delComponent<PlayerInput>(e);
+            if (World::mask(e).test(Component<Collectable>::Bit)) World::delComponent<Collectable>(e);
+            if (World::mask(e).test(Component<RoperTag>::Bit)) World::delComponent<RoperTag>(e);
+            if (World::mask(e).test(Component<GameOverTag>::Bit)) World::delComponent<GameOverTag>(e);
+            if (World::mask(e).test(Component<Collidable>::Bit)) World::delComponent<Collidable>(e);
+            if (World::mask(e).test(Component<DestroyTag>::Bit)) World::delComponent<DestroyTag>(e);
+        }
+
+    }
+
+    // --- Helper Implementations ---
+
+
+    // Helper: Cleans up rope joint and deletes the attached collectable (if any)
+    void HandleRopeJointCleanup(bagel::ent_type rope) {
+        using namespace bagel;
+        if (!World::mask(rope).test(Component<GrabbedJoint>::Bit)) return;
+
+        auto& grabbed = World::getComponent<GrabbedJoint>(rope);
+        b2DestroyJoint(grabbed.joint);
+        World::delComponent<GrabbedJoint>(rope);
+        ent_type item{grabbed.attachedEntityId};
+        World::addComponent<DestroyTag>(item, {});
+    }
+
 
 } // namespace goldminer

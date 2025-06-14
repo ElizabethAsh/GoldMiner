@@ -102,14 +102,16 @@ int main() {
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg);
             goldminer::RopeSwingSystem();
             goldminer::RopeExtensionSystem();
+            goldminer::PlayerInputSystem(nullptr); // Process player input
             goldminer::PhysicsSyncSystem();
             goldminer::CollisionSystem();
-            goldminer::DebugCollisionSystem();
+            //goldminer::DebugCollisionSystem();
             // Render ECS entities
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
-            goldminer::Box2DDebugRenderSystem(renderer); //not redundant
+            //goldminer::Box2DDebugRenderSystem(renderer); //not redundant
 
+            goldminer::DestructionSystem();
         }
 
         SDL_RenderPresent(renderer);
