@@ -947,19 +947,20 @@ namespace goldminer {
         }
     }
 
-       /**
+ /**
  * @brief Updates player scores based on collected items.
  *
  * This system scans all entities that:
  * - Are collectable (`Collectable`)
  * - Have a value (`Value`)
  * - Are currently grabbed by a rope (`GrabbedJoint`)
+ * - Have NOT been scored yet (`ScoredTag`)
  *
  * For each such entity:
  * - The system finds the rope it's attached to via `GrabbedJoint.attachedEntityId`
  * - Uses the rope's `PlayerInfo` to determine which player collected the item
  * - Increases the player's `Score` by the item's `Value`
- * - Destroys the collected item from the world
+ * - Adds `ScoredTag` to mark it as already processed
  *
  * Expected components:
  * - Collectable
@@ -972,7 +973,8 @@ namespace goldminer {
  * after `PullObjectSystem()` has updated object positions and grab logic.
  */
 void ScoreSystem() {
-
+    using namespace bagel;
+    using namespace goldminer;
 
     Mask itemMask;
     itemMask.set(Component<Collectable>::Bit);
@@ -987,10 +989,10 @@ void ScoreSystem() {
         ent_type ent{id};
 
         if (!World::mask(ent).test(itemMask)) continue;
+        if (World::mask(ent).test(Component<ScoredTag>::Bit)) continue; // ✅ already processed
 
         const Value& value = World::getComponent<Value>(ent);
         const GrabbedJoint& joint = World::getComponent<GrabbedJoint>(ent);
-
         if (joint.attachedEntityId == -1) continue;
 
         ent_type ropeEnt{joint.attachedEntityId};
@@ -1009,11 +1011,12 @@ void ScoreSystem() {
             Score& score = World::getComponent<Score>(scoreEnt);
             score.points += value.amount;
 
-            Entity(ent).destroy();
+            World::addComponent<ScoredTag>(ent, {}); // ✅ mark as processed
             break;
         }
     }
 }
+
 
 
     /**

@@ -119,6 +119,8 @@ namespace goldminer
         bool retractRope = false;
     };
 
+    struct ScoredTag {};
+
 
     //----------------------------------
     /// @section Tags
