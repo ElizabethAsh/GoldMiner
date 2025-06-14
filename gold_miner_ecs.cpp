@@ -36,16 +36,32 @@ namespace goldminer {
     /// @section Entity Creation Functions
     //----------------------------------
 
-    /**
-     * @brief Creates a new player entity with base components.
-     * @param playerID The identifier of the player.
+        /**
+     * @brief Creates a new player entity positioned inside their blue arch area.
+     * Each player stands in the center of their screen half.
+     *
+     * @param playerID The identifier of the player (1 or 2).
      * @return The ID of the created entity.
      */
     id_type CreatePlayer(int playerID) {
         Entity e = Entity::create();
-        e.addAll(Position{570.0f, 10.0f}, Velocity{}, Renderable{SPRITE_PLAYER_IDLE}, PlayerInfo{playerID}, Score{0}, PlayerInput{});
+
+        // Calculate position based on screen half (each half is 640px wide)
+        float startX = (playerID == 1) ? 220.0f : 860.0f; // Center of blue arch
+        float startY = 10.0f;
+
+        e.addAll(
+            Position{startX, startY},
+            Velocity{},
+            Renderable{SPRITE_PLAYER_IDLE},
+            PlayerInfo{playerID},
+            Score{0},
+            PlayerInput{}
+        );
+
         return e.entity().id;
     }
+
 
     /**
      * @brief Creates a dynamic rope entity with a narrow rectangle body for collision testing.
@@ -536,23 +552,32 @@ namespace goldminer {
     //----------------------------------
 
 
-    /**
-     * @brief Reads player input and stores it in PlayerInput component.
-     * If the player's timer has expired, input is ignored.
+        /**
+     * @brief Reads keyboard input and sets the rope command per player.
      *
-     * This prevents a player from sending the rope once their time has run out.
+     * Each player is assigned a unique key:
+     * - Player 1 uses the SPACE key to send the rope.
+     * - Player 2 uses the RETURN (Enter) key to send the rope.
+     *
+     * Input is ignored for a player whose timer has reached 0.
      *
      * @param event Pointer to SDL_Event (keyboard event)
      */
     void PlayerInputSystem(const SDL_Event* event) {
         if (!event) return;
 
+        // Track key presses
         bool spacePressed = false;
+        bool enterPressed = false;
 
         if (event->type == SDL_EVENT_KEY_DOWN) {
             if (event->key.key == SDLK_SPACE) {
                 spacePressed = true;
-                std::cout << "[PlayerInputSystem] Space key pressed, sending rope command.\n";
+                std::cout << "[PlayerInputSystem] SPACE pressed (Player 1)\n";
+            }
+            if (event->key.key == SDLK_RETURN) {
+                enterPressed = true;
+                std::cout << "[PlayerInputSystem] RETURN pressed (Player 2)\n";
             }
         }
 
@@ -572,6 +597,7 @@ namespace goldminer {
             const auto& player = World::getComponent<PlayerInfo>(ent);
             int pid = player.playerID;
 
+            // Check if this player's timer is still running
             bool hasTime = true;
 
             for (id_type tid = 0; tid <= World::maxId().id; ++tid) {
@@ -584,12 +610,19 @@ namespace goldminer {
                 const auto& timer = World::getComponent<GameTimer>(timerEnt);
                 if (timer.timeLeft <= 0.0f) {
                     hasTime = false;
+                    break;
                 }
             }
 
-            input.sendRope = spacePressed && hasTime;
+            // Set input based on player ID and key pressed
+            if (pid == 1) {
+                input.sendRope = spacePressed && hasTime;
+            } else if (pid == 2) {
+                input.sendRope = enterPressed && hasTime;
+            }
         }
     }
+
 
     /**
      * @brief Oscillates rope entities that are currently at rest.
@@ -1358,7 +1391,7 @@ namespace goldminer {
         using namespace goldminer;
 
         constexpr float UI_BASE_Y = 4.0f;
-        constexpr float PLAYER_UI_SPACING_X = 10.0f;//לשנות את הערך שנוסיף עוד שחקן
+        constexpr float PLAYER_UI_SPACING_X = 640.0f;
         constexpr float ICON_SPACING = 10.0f;
         //constexpr float NUMBER_Y_OFFSET = 4.0f;
 
@@ -1375,14 +1408,14 @@ namespace goldminer {
         timerMask.set(Component<GameTimer>::Bit);
         timerMask.set(Component<PlayerInfo>::Bit);
 
-        for (id_type id = 0; id <= World::maxId().id; ++id) {
+        for (id_type id = 1; id <= World::maxId().id; ++id) {
             ent_type uiEnt{id};
             if (!World::mask(uiEnt).test(uiMask)) continue;
 
             const PlayerInfo& uiPlayer = World::getComponent<PlayerInfo>(uiEnt);
             int pid = uiPlayer.playerID;
 
-            float offsetX = 5.0f + pid * PLAYER_UI_SPACING_X;
+            float offsetX = 5.0f + (pid-1) * PLAYER_UI_SPACING_X;
 
             // === Score ===
             SDL_Texture* moneyIcon = GetSpriteTexture(SPRITE_TITLE_MONEY);
