@@ -61,14 +61,13 @@ int main() {
                     // Create some initial entities
                     goldminer::CreatePlayer(1);
                     goldminer::CreateRope(1);
-                    // Random layout
-//                    int layout = rand() % 3;
-//                    switch (layout) {
-//                        case 0: goldminer::LoadLayout1(); break;
-//                        case 1: goldminer::LoadLayout2(); break;
-//                        case 2: goldminer::LoadLayout3(); break;
-//                    }
-                    goldminer::LoadLayout3();
+                    //Random layout
+                    int layout = rand() % 3;
+                    switch (layout) {
+                        case 0: goldminer::LoadLayout1(); break;
+                        case 1: goldminer::LoadLayout2(); break;
+                        case 2: goldminer::LoadLayout3(); break;
+                    }
                     goldminer::CreateUIEntity(1);
                     bagel::Entity scoreE = bagel::Entity::create();
                     scoreE.addAll(goldminer::Score{123}, goldminer::PlayerInfo{1});
