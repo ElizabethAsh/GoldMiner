@@ -1233,19 +1233,40 @@ void ScoreSystem() {
         }
     }
 
-    /**
-    * @brief Updates the global game timer.
- */
-    void TimerSystem() {
+        /**
+     * @brief Decreases the remaining time for each player with a GameTimer.
+     *
+     * This system is called once per frame and is responsible for updating
+     * the countdown timer of each player. It scans all entities that have both
+     * a GameTimer and PlayerInfo component, subtracts the elapsed frame time
+     * (`deltaTime`) from the timer, and clamps the result to zero if needed.
+     *
+     * This allows each player to have their own independent countdown.
+     * Once the timer reaches 0, it will no longer decrease.
+     *
+     * Typical use: Call during the game loop when the game state is Playing.
+     *
+     * @param deltaTime The amount of time (in seconds) elapsed since the last frame.
+     */
+    void GameTimerSystem(float deltaTime) {
+        using namespace bagel;
+
         Mask mask;
         mask.set(Component<GameTimer>::Bit);
+        mask.set(Component<PlayerInfo>::Bit);
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
             ent_type ent{id};
             if (!World::mask(ent).test(mask)) continue;
-            // No logic implemented yet
+
+            GameTimer& timer = World::getComponent<GameTimer>(ent);
+            timer.timeLeft -= deltaTime;
+
+            if (timer.timeLeft < 0.0f)
+                timer.timeLeft = 0.0f;
         }
     }
+
 
     void DrawNumber(SDL_Renderer* renderer, int number, float x, float y) {
         constexpr float SCALE = 0.75f;

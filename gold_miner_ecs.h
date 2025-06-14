@@ -143,7 +143,7 @@ namespace goldminer
     void ScoreSystem();
     void TreasureChestSystem();
     void RenderSystem(SDL_Renderer* renderer);
-    void TimerSystem();
+    void GameTimerSystem(float deltaTime);
     void UISystem(SDL_Renderer* renderer);
     void MoleSystem();
     void LifeTimeSystem();

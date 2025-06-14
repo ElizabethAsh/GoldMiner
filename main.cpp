@@ -110,6 +110,7 @@ int main() {
             // Draw background
             SDL_FRect bg = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg);
+            goldminer::GameTimerSystem(timeStep);
             goldminer::RopeSwingSystem();
             goldminer::ScoreSystem();
             goldminer::RopeExtensionSystem();
