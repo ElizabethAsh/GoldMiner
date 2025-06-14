@@ -37,4 +37,6 @@ BAGEL_STORAGE(goldminer::Collectable, bagel::TaggedStorage)
 BAGEL_STORAGE(goldminer::RoperTag, bagel::TaggedStorage)
 BAGEL_STORAGE(goldminer::Collidable, bagel::TaggedStorage)
 BAGEL_STORAGE(goldminer::GameOverTag, bagel::TaggedStorage)
+BAGEL_STORAGE(goldminer::ScoredTag, bagel::TaggedStorage)
+
 
