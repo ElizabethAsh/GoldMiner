@@ -144,7 +144,7 @@ namespace goldminer
     void TreasureChestSystem();
     void RenderSystem(SDL_Renderer* renderer);
     void TimerSystem();
-    void UISystem();
+    void UISystem(SDL_Renderer* renderer);
     void MoleSystem();
     void LifeTimeSystem();
     void PhysicsSyncSystem();
@@ -189,6 +189,16 @@ enum SpriteID {
     SPRITE_BACKGROUND,
     SPRITE_PRESS_ENTER_TO_START, // New sprite for the main menu text
     SPRITE_PAUSED_TEXT,          // New sprite for the pause menu text
+    SPRITE_DIGIT_0,
+    SPRITE_DIGIT_1,
+    SPRITE_DIGIT_2,
+    SPRITE_DIGIT_3,
+    SPRITE_DIGIT_4,
+    SPRITE_DIGIT_5,
+    SPRITE_DIGIT_6,
+    SPRITE_DIGIT_7,
+    SPRITE_DIGIT_8,
+    SPRITE_DIGIT_9,
 
 
     SPRITE_COUNT

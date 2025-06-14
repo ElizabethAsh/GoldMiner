@@ -66,6 +66,14 @@ int main() {
                     goldminer::CreateRock(1000.0f, 530.0f);
                     goldminer::CreateTreasureChest(300.0f, 510.0f);
 
+                    goldminer::CreateUIEntity(1);
+                    bagel::Entity scoreE = bagel::Entity::create();
+                    scoreE.addAll(goldminer::Score{123}, goldminer::PlayerInfo{1});
+
+                    bagel::Entity timerE = bagel::Entity::create();
+                    timerE.addAll(goldminer::GameTimer{45.0f}, goldminer::PlayerInfo{1});
+
+
                     gameState = GameState::Playing;
                 } else if (gameState == GameState::Playing && key == SDLK_ESCAPE) {
                     // Return to main menu
@@ -109,7 +117,9 @@ int main() {
             // Render ECS entities
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
-            //goldminer::Box2DDebugRenderSystem(renderer); //not redundant
+            goldminer::Box2DDebugRenderSystem(renderer); //not redundant
+            goldminer::UISystem(renderer);
+
 
             goldminer::DestructionSystem();
         }
