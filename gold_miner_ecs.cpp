@@ -419,13 +419,18 @@ namespace goldminer {
         // Attach entity ID to body for reference if needed
         b2Body_SetUserData(bodyId, new bagel::ent_type{e.entity()});
 
+        // Random value from predefined set
+        const int options[] = {10, 20, 50, 70, 100};
+        int randomIndex = rand() % 5;
+        int randomValue = options[randomIndex];
+
         // Add ECS components to the entity
         e.addAll(
                 Position{x, y},
                 Renderable{SPRITE_TREASURE_CHEST},
                 Collectable{},
                 ItemType{ItemType::Type::TreasureChest},
-                Value{100},
+                Value{randomValue},
                 Weight{3.0f},
                 Collidable{},
                 PlayerInfo{-1},
@@ -813,8 +818,6 @@ namespace goldminer {
         }
     }
 
-
-
     /**
      * @brief Detects and handles hit events between entities using Box2D's Hit system.
      *
@@ -897,14 +900,14 @@ namespace goldminer {
 
 
     /**
- * @brief Debug system to detect collisions approximately by comparing positions.
- *
- * This system is useful when Box2D contact events are not working as expected.
- * It checks for overlapping rectangles (AABB) between entities that have
- * Position and Collidable components.
- *
- * It logs rope vs item collisions if their positions intersect.
- */
+     * @brief Debug system to detect collisions approximately by comparing positions.
+     *
+     * This system is useful when Box2D contact events are not working as expected.
+     * It checks for overlapping rectangles (AABB) between entities that have
+     * Position and Collidable components.
+     *
+     * It logs rope vs item collisions if their positions intersect.
+     */
     void DebugCollisionSystem() {
 
         for (id_type a = 0; a <= World::maxId().id; ++a) {
@@ -943,8 +946,8 @@ namespace goldminer {
     }
 
     /**
- * @brief Pulls collected items towards the player.
- */
+     * @brief Pulls collected items towards the player.
+     */
     void PullObjectSystem() {
         Mask mask;
         mask.set(Component<Collidable>::Bit);
@@ -964,90 +967,73 @@ namespace goldminer {
         }
     }
 
- /**
- * @brief Updates player scores based on collected items.
- *
- * This system scans all entities that:
- * - Are collectable (`Collectable`)
- * - Have a value (`Value`)
- * - Are currently grabbed by a rope (`GrabbedJoint`)
- * - Have NOT been scored yet (`ScoredTag`)
- *
- * For each such entity:
- * - The system finds the rope it's attached to via `GrabbedJoint.attachedEntityId`
- * - Uses the rope's `PlayerInfo` to determine which player collected the item
- * - Increases the player's `Score` by the item's `Value`
- * - Adds `ScoredTag` to mark it as already processed
- *
- * Expected components:
- * - Collectable
- * - Value
- * - GrabbedJoint
- * - Score (for each player)
- * - PlayerInfo (both for rope and score entities)
- *
- * Typical use: Call this system once per frame during the game loop,
- * after `PullObjectSystem()` has updated object positions and grab logic.
- */
-void ScoreSystem() {
-    using namespace bagel;
-    using namespace goldminer;
-
-    Mask itemMask;
-    itemMask.set(Component<Collectable>::Bit);
-    itemMask.set(Component<Value>::Bit);
-    itemMask.set(Component<GrabbedJoint>::Bit);
-
-    Mask scoreMask;
-    scoreMask.set(Component<Score>::Bit);
-    scoreMask.set(Component<PlayerInfo>::Bit);
-
-    for (id_type id = 0; id <= World::maxId().id; ++id) {
-        ent_type ent{id};
-
-        if (!World::mask(ent).test(itemMask)) continue;
-        if (World::mask(ent).test(Component<ScoredTag>::Bit)) continue; // ✅ already processed
-
-        const Value& value = World::getComponent<Value>(ent);
-        const GrabbedJoint& joint = World::getComponent<GrabbedJoint>(ent);
-        if (joint.attachedEntityId == -1) continue;
-
-        ent_type ropeEnt{joint.attachedEntityId};
-        if (!World::mask(ropeEnt).test(Component<PlayerInfo>::Bit)) continue;
-
-        const PlayerInfo& player = World::getComponent<PlayerInfo>(ropeEnt);
-        int pid = player.playerID;
-
-        for (id_type sid = 0; sid <= World::maxId().id; ++sid) {
-            ent_type scoreEnt{sid};
-            if (!World::mask(scoreEnt).test(scoreMask)) continue;
-
-            const PlayerInfo& scorePlayer = World::getComponent<PlayerInfo>(scoreEnt);
-            if (scorePlayer.playerID != pid) continue;
-
-            Score& score = World::getComponent<Score>(scoreEnt);
-            score.points += value.amount;
-
-            World::addComponent<ScoredTag>(ent, {}); // ✅ mark as processed
-            break;
-        }
-    }
-}
-
-
-
-    /**
-     * @brief Assigns random value to mystery bag items when collected.
+     /**
+     * @brief Updates player scores based on collected items.
+     *
+     * This system scans all entities that:
+     * - Are collectable (`Collectable`)
+     * - Have a value (`Value`)
+     * - Are currently grabbed by a rope (`GrabbedJoint`)
+     * - Have NOT been scored yet (`ScoredTag`)
+     *
+     * For each such entity:
+     * - The system finds the rope it's attached to via `GrabbedJoint.attachedEntityId`
+     * - Uses the rope's `PlayerInfo` to determine which player collected the item
+     * - Increases the player's `Score` by the item's `Value`
+     * - Adds `ScoredTag` to mark it as already processed
+     *
+     * Expected components:
+     * - Collectable
+     * - Value
+     * - GrabbedJoint
+     * - Score (for each player)
+     * - PlayerInfo (both for rope and score entities)
+     *
+     * Typical use: Call this system once per frame during the game loop,
+     * after `PullObjectSystem()` has updated object positions and grab logic.
      */
-    void TreasureChestSystem() {
-        Mask mask;
-        mask.set(Component<PlayerInfo>::Bit);
-        mask.set(Component<Value>::Bit);
+    void ScoreSystem() {
+        using namespace bagel;
+        using namespace goldminer;
+
+        Mask itemMask;
+        itemMask.set(Component<Collectable>::Bit);
+        itemMask.set(Component<Value>::Bit);
+        itemMask.set(Component<GrabbedJoint>::Bit);
+
+        Mask scoreMask;
+        scoreMask.set(Component<Score>::Bit);
+        scoreMask.set(Component<PlayerInfo>::Bit);
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
             ent_type ent{id};
-            if (!World::mask(ent).test(mask)) continue;
-            // No logic implemented yet
+
+            if (!World::mask(ent).test(itemMask)) continue;
+            if (World::mask(ent).test(Component<ScoredTag>::Bit)) continue; // ✅ already processed
+
+            const Value& value = World::getComponent<Value>(ent);
+            const GrabbedJoint& joint = World::getComponent<GrabbedJoint>(ent);
+            if (joint.attachedEntityId == -1) continue;
+
+            ent_type ropeEnt{joint.attachedEntityId};
+            if (!World::mask(ropeEnt).test(Component<PlayerInfo>::Bit)) continue;
+
+            const PlayerInfo& player = World::getComponent<PlayerInfo>(ropeEnt);
+            int pid = player.playerID;
+
+            for (id_type sid = 0; sid <= World::maxId().id; ++sid) {
+                ent_type scoreEnt{sid};
+                if (!World::mask(scoreEnt).test(scoreMask)) continue;
+
+                const PlayerInfo& scorePlayer = World::getComponent<PlayerInfo>(scoreEnt);
+                if (scorePlayer.playerID != pid) continue;
+
+                Score& score = World::getComponent<Score>(scoreEnt);
+                score.points += value.amount;
+
+                World::addComponent<ScoredTag>(ent, {}); // ✅ mark as processed
+                break;
+            }
         }
     }
 

@@ -66,8 +66,6 @@ int main() {
                     goldminer::CreateRock(1000.0f, 530.0f);
                     goldminer::CreateTreasureChest(300.0f, 510.0f);
 
-
-
                     goldminer::CreateUIEntity(1);
                     bagel::Entity scoreE = bagel::Entity::create();
                     scoreE.addAll(goldminer::Score{123}, goldminer::PlayerInfo{1});
