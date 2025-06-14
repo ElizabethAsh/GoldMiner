@@ -869,6 +869,7 @@ namespace goldminer {
 
         b2JointId jointId = b2CreateWeldJoint(goldminer::gWorld, &jointDef);
         World::addComponent<GrabbedJoint>(rope, GrabbedJoint{jointId, collectable.id});
+        World::addComponent<GrabbedJoint>(collectable, GrabbedJoint{jointId, rope.id});
         auto& ropeControl = World::getComponent<RopeControl>(rope);
         ropeControl.state = RopeControl::State::Retracting;
 
@@ -946,23 +947,74 @@ namespace goldminer {
         }
     }
 
-    /**
-     * @brief Adds score to players based on collected items.
-     */
-    void ScoreSystem() {
-        Mask mask;
-        mask.set(Component<ItemType>::Bit);
-        mask.set(Component<PlayerInfo>::Bit);
+       /**
+ * @brief Updates player scores based on collected items.
+ *
+ * This system scans all entities that:
+ * - Are collectable (`Collectable`)
+ * - Have a value (`Value`)
+ * - Are currently grabbed by a rope (`GrabbedJoint`)
+ *
+ * For each such entity:
+ * - The system finds the rope it's attached to via `GrabbedJoint.attachedEntityId`
+ * - Uses the rope's `PlayerInfo` to determine which player collected the item
+ * - Increases the player's `Score` by the item's `Value`
+ * - Destroys the collected item from the world
+ *
+ * Expected components:
+ * - Collectable
+ * - Value
+ * - GrabbedJoint
+ * - Score (for each player)
+ * - PlayerInfo (both for rope and score entities)
+ *
+ * Typical use: Call this system once per frame during the game loop,
+ * after `PullObjectSystem()` has updated object positions and grab logic.
+ */
+void ScoreSystem() {
 
-        Mask optional;
-        optional.set(Component<Value>::Bit);
 
-        for (id_type id = 0; id <= World::maxId().id; ++id) {
-            ent_type ent{id};
-            if (!World::mask(ent).test(mask)) continue;
-            // No logic implemented yet
+    Mask itemMask;
+    itemMask.set(Component<Collectable>::Bit);
+    itemMask.set(Component<Value>::Bit);
+    itemMask.set(Component<GrabbedJoint>::Bit);
+
+    Mask scoreMask;
+    scoreMask.set(Component<Score>::Bit);
+    scoreMask.set(Component<PlayerInfo>::Bit);
+
+    for (id_type id = 0; id <= World::maxId().id; ++id) {
+        ent_type ent{id};
+
+        if (!World::mask(ent).test(itemMask)) continue;
+
+        const Value& value = World::getComponent<Value>(ent);
+        const GrabbedJoint& joint = World::getComponent<GrabbedJoint>(ent);
+
+        if (joint.attachedEntityId == -1) continue;
+
+        ent_type ropeEnt{joint.attachedEntityId};
+        if (!World::mask(ropeEnt).test(Component<PlayerInfo>::Bit)) continue;
+
+        const PlayerInfo& player = World::getComponent<PlayerInfo>(ropeEnt);
+        int pid = player.playerID;
+
+        for (id_type sid = 0; sid <= World::maxId().id; ++sid) {
+            ent_type scoreEnt{sid};
+            if (!World::mask(scoreEnt).test(scoreMask)) continue;
+
+            const PlayerInfo& scorePlayer = World::getComponent<PlayerInfo>(scoreEnt);
+            if (scorePlayer.playerID != pid) continue;
+
+            Score& score = World::getComponent<Score>(scoreEnt);
+            score.points += value.amount;
+
+            Entity(ent).destroy();
+            break;
         }
     }
+}
+
 
     /**
      * @brief Assigns random value to mystery bag items when collected.
@@ -1070,14 +1122,14 @@ namespace goldminer {
                 bagel::World::mask(ent).test(bagel::Component<goldminer::PhysicsBody>::Bit)) {
                 const auto& phys = bagel::World::getComponent<goldminer::PhysicsBody>(ent);
                 b2Transform tf = b2Body_GetTransform(phys.bodyId);
-                std::cout << "ROPE at: " << tf.p.x * 50 << ", " << tf.p.y * 50 << std::endl;
+                //std::cout << "ROPE at: " << tf.p.x * 50 << ", " << tf.p.y * 50 << std::endl;
                 }
 
             if (bagel::World::mask(ent).test(bagel::Component<goldminer::ItemType>::Bit) &&
                 bagel::World::mask(ent).test(bagel::Component<goldminer::PhysicsBody>::Bit)) {
                 const auto& phys = bagel::World::getComponent<goldminer::PhysicsBody>(ent);
                 b2Transform tf = b2Body_GetTransform(phys.bodyId);
-                std::cout << "ITEM at: " << tf.p.x * 50 << ", " << tf.p.y * 50 << std::endl;
+                //std::cout << "ITEM at: " << tf.p.x * 50 << ", " << tf.p.y * 50 << std::endl;
                 }
         }
 
