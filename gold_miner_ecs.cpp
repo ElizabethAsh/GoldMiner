@@ -419,13 +419,18 @@ namespace goldminer {
         // Attach entity ID to body for reference if needed
         b2Body_SetUserData(bodyId, new bagel::ent_type{e.entity()});
 
+        // Random value from predefined set
+        const int options[] = {10, 20, 50, 70, 100};
+        int randomIndex = rand() % 5;
+        int randomValue = options[randomIndex];
+
         // Add ECS components to the entity
         e.addAll(
                 Position{x, y},
                 Renderable{SPRITE_TREASURE_CHEST},
                 Collectable{},
                 ItemType{ItemType::Type::TreasureChest},
-                Value{100},
+                Value{randomValue},
                 Weight{3.0f},
                 Collidable{},
                 PlayerInfo{-1},
@@ -529,6 +534,7 @@ namespace goldminer {
     //----------------------------------
     /// @section System Implementations (Skeletons)
     //----------------------------------
+
 
     /**
      * @brief Reads player input and stores it in PlayerInput component.
@@ -787,7 +793,26 @@ namespace goldminer {
                 }
             }
             else if (ropeControl.state == RopeControl::State::Retracting) {
-                length.value -= RETRACTION_SPEED * deltaTime;
+                float weightMultiplier = 1.0f;
+
+                if (World::mask(rope).test(Component<GrabbedJoint>::Bit)) {
+                    const auto& joint = World::getComponent<GrabbedJoint>(rope);
+                    bagel::ent_type attached{joint.attachedEntityId};
+
+                    std::cout << "[DEBUG] Checking weight for entity " << attached.id << std::endl;
+
+                    if (World::mask(attached).test(Component<Weight>::Bit)) {
+                        float itemWeight = World::getComponent<Weight>(attached).w;
+                        std::cout << "[DEBUG] Weight = " << itemWeight << std::endl;
+                        weightMultiplier = std::max(0.1f, itemWeight);
+                    } else {
+                        std::cout << "[DEBUG] No Weight component!" << std::endl;
+                    }
+                }
+
+                float adjustedSpeed = RETRACTION_SPEED / weightMultiplier;
+                length.value -= adjustedSpeed * deltaTime;
+
                 if (length.value <= 0.0f) {
                     length.value = 0.0f;
                     ropeControl.state = RopeControl::State::AtRest;
@@ -798,8 +823,8 @@ namespace goldminer {
                     b2Vec2 retractDir = { retractTarget.x - currentPos.x, retractTarget.y - currentPos.y };
                     float retractDist = sqrt(retractDir.x * retractDir.x + retractDir.y * retractDir.y);
                     if (retractDist > 0.01f) {
-                        retractDir.x *= RETRACTION_SPEED / PPM / retractDist;
-                        retractDir.y *= RETRACTION_SPEED / PPM / retractDist;
+                        retractDir.x *= adjustedSpeed / PPM / retractDist;
+                        retractDir.y *= adjustedSpeed / PPM / retractDist;
                         b2Body_SetLinearVelocity(phys.bodyId, retractDir);
                     } else {
                         b2Body_SetLinearVelocity(phys.bodyId, {0, 0});
@@ -807,7 +832,6 @@ namespace goldminer {
                 }
             }
             else if (ropeControl.state == RopeControl::State::AtRest) {
-                // If at rest, just keep the body in place
                 b2Body_SetLinearVelocity(phys.bodyId, {0.0f, 0.0f});
             }
 
@@ -815,15 +839,12 @@ namespace goldminer {
             if (ropeControl.state == RopeControl::State::AtRest & World::mask(rope).test(Component<GrabbedJoint>::Bit)) {
                 HandleRopeJointCleanup(rope);
 
-                // Reset rope physics after releasing item
                 b2Body_SetLinearVelocity(phys.bodyId, {0.0f, 0.0f});
                 b2Body_SetAngularVelocity(phys.bodyId, 0.0f);
-                b2Body_SetGravityScale(phys.bodyId, 0.0f); // or 1.0f if you want gravity at rest
-
+                b2Body_SetGravityScale(phys.bodyId, 0.0f);
             }
         }
     }
-
 
     /**
      * @brief Detects and handles hit events between entities using Box2D's Hit system.
@@ -907,14 +928,14 @@ namespace goldminer {
 
 
     /**
- * @brief Debug system to detect collisions approximately by comparing positions.
- *
- * This system is useful when Box2D contact events are not working as expected.
- * It checks for overlapping rectangles (AABB) between entities that have
- * Position and Collidable components.
- *
- * It logs rope vs item collisions if their positions intersect.
- */
+     * @brief Debug system to detect collisions approximately by comparing positions.
+     *
+     * This system is useful when Box2D contact events are not working as expected.
+     * It checks for overlapping rectangles (AABB) between entities that have
+     * Position and Collidable components.
+     *
+     * It logs rope vs item collisions if their positions intersect.
+     */
     void DebugCollisionSystem() {
 
         for (id_type a = 0; a <= World::maxId().id; ++a) {
@@ -953,8 +974,8 @@ namespace goldminer {
     }
 
     /**
- * @brief Pulls collected items towards the player.
- */
+     * @brief Pulls collected items towards the player.
+     */
     void PullObjectSystem() {
         Mask mask;
         mask.set(Component<Collidable>::Bit);
@@ -1041,23 +1062,6 @@ namespace goldminer {
                 World::addComponent<ScoredTag>(ent, {}); // ✅ mark as processed
                 break;
             }
-        }
-    }
-
-
-
-    /**
-     * @brief Assigns random value to mystery bag items when collected.
-     */
-    void TreasureChestSystem() {
-        Mask mask;
-        mask.set(Component<PlayerInfo>::Bit);
-        mask.set(Component<Value>::Bit);
-
-        for (id_type id = 0; id <= World::maxId().id; ++id) {
-            ent_type ent{id};
-            if (!World::mask(ent).test(mask)) continue;
-            // No logic implemented yet
         }
     }
 
@@ -1520,21 +1524,6 @@ namespace goldminer {
 
     }
 
-    // --- Helper Implementations ---
-
-
-    // Helper: Cleans up rope joint and deletes the attached collectable (if any)
-    void HandleRopeJointCleanup(bagel::ent_type rope) {
-        using namespace bagel;
-        if (!World::mask(rope).test(Component<GrabbedJoint>::Bit)) return;
-
-        auto& grabbed = World::getComponent<GrabbedJoint>(rope);
-        b2DestroyJoint(grabbed.joint);
-        World::delComponent<GrabbedJoint>(rope);
-        ent_type item{grabbed.attachedEntityId};
-        World::addComponent<DestroyTag>(item, {});
-    }
-
     void CheckForGameOverSystem() {
         using namespace bagel;
         using namespace goldminer;
@@ -1591,6 +1580,59 @@ namespace goldminer {
         }
     }
 
+    //----------------------------------
+    /// @section Helper Implementations
+    //----------------------------------
+
+    // Helper: Cleans up rope joint and deletes the attached collectable (if any)
+    void HandleRopeJointCleanup(bagel::ent_type rope) {
+        using namespace bagel;
+        if (!World::mask(rope).test(Component<GrabbedJoint>::Bit)) return;
+
+        auto& grabbed = World::getComponent<GrabbedJoint>(rope);
+        b2DestroyJoint(grabbed.joint);
+        World::delComponent<GrabbedJoint>(rope);
+        ent_type item{grabbed.attachedEntityId};
+        World::addComponent<DestroyTag>(item, {});
+    }
+
+    //----------------------------------
+    /// @section Game's Layout
+    //----------------------------------
+
+    void LoadLayout1() {
+        goldminer::CreateGold(100.0f, 500.0f);
+        goldminer::CreateDiamond(500.0f, 520.0f);
+        goldminer::CreateDiamond(650.0f, 400.0f);
+        goldminer::CreateRock(900.0f, 530.0f);
+        goldminer::CreateGold(1000.0f, 300.0f);
+        goldminer::CreateTreasureChest(300.0f, 510.0f);
+        goldminer::CreateGold(300.0f, 300.0f);
+    }
+
+    void LoadLayout2() {
+        goldminer::CreateDiamond(100.0f, 500.0f);
+        goldminer::CreateRock(500.0f, 520.0f);
+        goldminer::CreateTreasureChest(650.0f, 400.0f);
+        goldminer::CreateGold(900.0f, 530.0f);
+        goldminer::CreateGold(300.0f, 300.0f);
+        goldminer::CreateRock(1000.0f, 300.0f);
+        goldminer::CreateTreasureChest(300.0f, 400.0f);
+
+    }
+
+    void LoadLayout3() {
+        goldminer::CreateGold(150.0f, 500.0f);
+        goldminer::CreateRock(300.0f, 520.0f);
+        goldminer::CreateDiamond(750.0f, 540.0f);
+        goldminer::CreateTreasureChest(1000.0f, 550.0f);
+        goldminer::CreateGold(300.0f, 300.0f);
+        goldminer::CreateGold(1000.0f, 300.0f);
+        goldminer::CreateRock(200.0f, 400.0f);
+        goldminer::CreateTreasureChest(500.0f, 550.0f);
+        goldminer::CreateDiamond(600.0f, 300.0f);
+
+    }
 
 
 } // namespace goldminer

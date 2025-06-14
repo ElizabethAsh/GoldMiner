@@ -174,6 +174,14 @@ namespace goldminer
     id_type CreateUIEntity(int playerID);
     id_type CreateMole(float x, float y);
 
+    //----------------------------------
+    /// @section Game's Layout
+    //----------------------------------
+
+    void LoadLayout1();
+    void LoadLayout2();
+    void LoadLayout3();
+
 } // namespace goldminer
 
 enum SpriteID {
