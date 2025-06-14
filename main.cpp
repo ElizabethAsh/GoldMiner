@@ -66,6 +66,8 @@ int main() {
                     goldminer::CreateRock(1000.0f, 530.0f);
                     goldminer::CreateTreasureChest(300.0f, 510.0f);
 
+
+
                     goldminer::CreateUIEntity(1);
                     bagel::Entity scoreE = bagel::Entity::create();
                     scoreE.addAll(goldminer::Score{123}, goldminer::PlayerInfo{1});
@@ -109,6 +111,7 @@ int main() {
             SDL_FRect bg = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg);
             goldminer::RopeSwingSystem();
+            goldminer::ScoreSystem();
             goldminer::RopeExtensionSystem();
             goldminer::PlayerInputSystem(nullptr); // Process player input
             goldminer::PhysicsSyncSystem();
@@ -118,6 +121,7 @@ int main() {
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
             goldminer::Box2DDebugRenderSystem(renderer); //not redundant
+            //goldminer::ScoreSystem();
             goldminer::UISystem(renderer);
 
 
