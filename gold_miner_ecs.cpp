@@ -1485,8 +1485,9 @@ namespace goldminer {
 
     }
 
-    // --- Helper Implementations ---
-
+    //----------------------------------
+    /// @section Helper Implementations
+    //----------------------------------
 
     // Helper: Cleans up rope joint and deletes the attached collectable (if any)
     void HandleRopeJointCleanup(bagel::ent_type rope) {
@@ -1498,6 +1499,44 @@ namespace goldminer {
         World::delComponent<GrabbedJoint>(rope);
         ent_type item{grabbed.attachedEntityId};
         World::addComponent<DestroyTag>(item, {});
+    }
+
+    //----------------------------------
+    /// @section Game's Layout
+    //----------------------------------
+
+    void LoadLayout1() {
+        goldminer::CreateGold(100.0f, 500.0f);
+        goldminer::CreateDiamond(500.0f, 520.0f);
+        goldminer::CreateDiamond(650.0f, 400.0f);
+        goldminer::CreateRock(900.0f, 530.0f);
+        goldminer::CreateGold(1000.0f, 300.0f);
+        goldminer::CreateTreasureChest(300.0f, 510.0f);
+        goldminer::CreateGold(300.0f, 300.0f);
+    }
+
+    void LoadLayout2() {
+        goldminer::CreateDiamond(100.0f, 500.0f);
+        goldminer::CreateRock(500.0f, 520.0f);
+        goldminer::CreateTreasureChest(650.0f, 400.0f);
+        goldminer::CreateGold(900.0f, 530.0f);
+        goldminer::CreateGold(300.0f, 300.0f);
+        goldminer::CreateRock(1000.0f, 300.0f);
+        goldminer::CreateTreasureChest(300.0f, 400.0f);
+
+    }
+
+    void LoadLayout3() {
+        goldminer::CreateGold(150.0f, 500.0f);
+        goldminer::CreateRock(300.0f, 520.0f);
+        goldminer::CreateDiamond(750.0f, 540.0f);
+        goldminer::CreateTreasureChest(1000.0f, 550.0f);
+        goldminer::CreateGold(300.0f, 300.0f);
+        goldminer::CreateGold(1000.0f, 300.0f);
+        goldminer::CreateRock(200.0f, 400.0f);
+        goldminer::CreateTreasureChest(500.0f, 550.0f);
+        goldminer::CreateDiamond(600.0f, 300.0f);
+
     }
 
 
