@@ -73,7 +73,7 @@ int main() {
                     scoreE.addAll(goldminer::Score{123}, goldminer::PlayerInfo{1});
 
                     bagel::Entity timerE = bagel::Entity::create();
-                    timerE.addAll(goldminer::GameTimer{15.0f}, goldminer::PlayerInfo{1});
+                    timerE.addAll(goldminer::GameTimer{90.0f}, goldminer::PlayerInfo{1});
 
 
                     gameState = GameState::Playing;
