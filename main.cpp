@@ -144,7 +144,7 @@ int main() {
             } else if (winner == 2) {
                 winTexture = IMG_LoadTexture(renderer, "res/Player2WINS.png");
             } else {
-                winTexture = IMG_LoadTexture(renderer, "res/Tie.png");
+                winTexture = IMG_LoadTexture(renderer, "res/tie.png");
             }
 
             if (winTexture) {
