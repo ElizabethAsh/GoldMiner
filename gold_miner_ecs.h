@@ -25,6 +25,8 @@ namespace goldminer
     // Global Box2D world for physics (preview API)
     extern b2WorldId gWorld;
     using id_type = int;
+    extern id_type player_id;
+    extern bool game_over ;
 
     //----------------------------------
     /// @section Components

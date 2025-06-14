@@ -13,7 +13,8 @@ const int SCREEN_HEIGHT = 720;
 
 enum class GameState {
     MainMenu,
-    Playing
+    Playing,
+    GameOver
 };
 
 int main() {
@@ -31,7 +32,7 @@ int main() {
         return 1;
     }
 
-    SDL_Texture* menuTexture = IMG_LoadTexture(renderer, "res/menu_screen.png");
+    SDL_Texture* menuTexture = IMG_LoadTexture(renderer, "res/gameStart.png");
     if (!menuTexture) {
         std::cerr << "Failed to load menu image: " << SDL_GetError() << std::endl;
         return 1;
@@ -79,10 +80,10 @@ int main() {
                     score2.addAll(goldminer::Score{0}, goldminer::PlayerInfo{2});
 
                     bagel::Entity timer1 = bagel::Entity::create();
-                    timer1.addAll(goldminer::GameTimer{90.0f}, goldminer::PlayerInfo{1});
+                    timer1.addAll(goldminer::GameTimer{30.0f}, goldminer::PlayerInfo{1});
 
                     bagel::Entity timer2 = bagel::Entity::create();
-                    timer2.addAll(goldminer::GameTimer{90.0f}, goldminer::PlayerInfo{2});
+                    timer2.addAll(goldminer::GameTimer{30.0f}, goldminer::PlayerInfo{2});
 
                     gameState = GameState::Playing;
                 } else if (gameState == GameState::Playing && key == SDLK_ESCAPE) {
@@ -121,10 +122,38 @@ int main() {
             goldminer::CollisionSystem();
             goldminer::CheckForGameOverSystem();
 
+
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
             goldminer::UISystem(renderer);
             goldminer::DestructionSystem();
+
+            if (goldminer::game_over) {
+                gameState = GameState::GameOver;
+            }
+
+
+        }
+        else if (gameState == GameState::GameOver) {
+            int winner = goldminer::player_id;
+
+            SDL_Texture* winTexture = nullptr;
+
+            if (winner == 1) {
+                winTexture = IMG_LoadTexture(renderer, "res/Player1WINS.png");
+            } else if (winner == 2) {
+                winTexture = IMG_LoadTexture(renderer, "res/Player2WINS.png");
+            } else {
+                winTexture = IMG_LoadTexture(renderer, "res/Tie.png");
+            }
+
+            if (winTexture) {
+                SDL_FRect dstRect = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
+                SDL_RenderTexture(renderer, winTexture, nullptr, &dstRect);
+                SDL_DestroyTexture(winTexture);
+            } else {
+                std::cerr << "Failed to load win/tie screen.\n";
+            }
         }
 
         SDL_RenderPresent(renderer);
