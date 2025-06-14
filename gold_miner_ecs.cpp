@@ -673,8 +673,9 @@ namespace goldminer {
     /**
      * @brief Handles rope extension and retraction logic.
      */
-
     void RopeExtensionSystem() {
+        using namespace bagel;
+
         Mask mask;
         mask.set(Component<RoperTag>::Bit);
         mask.set(Component<RopeControl>::Bit);
@@ -743,7 +744,6 @@ namespace goldminer {
             b2Vec2 direction = { targetPos.x - currentPos.x, targetPos.y - currentPos.y };
             float dist = sqrt(direction.x * direction.x + direction.y * direction.y);
 
-
             if (ropeControl.state == RopeControl::State::Extending) {
                 length.value += EXTENSION_SPEED * deltaTime;
                 if (length.value > MAX_LENGTH) {
@@ -760,7 +760,26 @@ namespace goldminer {
                 }
             }
             else if (ropeControl.state == RopeControl::State::Retracting) {
-                length.value -= RETRACTION_SPEED * deltaTime;
+                float weightMultiplier = 1.0f;
+
+                if (World::mask(rope).test(Component<GrabbedJoint>::Bit)) {
+                    const auto& joint = World::getComponent<GrabbedJoint>(rope);
+                    bagel::ent_type attached{joint.attachedEntityId};
+
+                    std::cout << "[DEBUG] Checking weight for entity " << attached.id << std::endl;
+
+                    if (World::mask(attached).test(Component<Weight>::Bit)) {
+                        float itemWeight = World::getComponent<Weight>(attached).w;
+                        std::cout << "[DEBUG] Weight = " << itemWeight << std::endl;
+                        weightMultiplier = std::max(0.1f, itemWeight);
+                    } else {
+                        std::cout << "[DEBUG] No Weight component!" << std::endl;
+                    }
+                }
+
+                float adjustedSpeed = RETRACTION_SPEED / weightMultiplier;
+                length.value -= adjustedSpeed * deltaTime;
+
                 if (length.value <= 0.0f) {
                     length.value = 0.0f;
                     ropeControl.state = RopeControl::State::AtRest;
@@ -771,8 +790,8 @@ namespace goldminer {
                     b2Vec2 retractDir = { retractTarget.x - currentPos.x, retractTarget.y - currentPos.y };
                     float retractDist = sqrt(retractDir.x * retractDir.x + retractDir.y * retractDir.y);
                     if (retractDist > 0.01f) {
-                        retractDir.x *= RETRACTION_SPEED / PPM / retractDist;
-                        retractDir.y *= RETRACTION_SPEED / PPM / retractDist;
+                        retractDir.x *= adjustedSpeed / PPM / retractDist;
+                        retractDir.y *= adjustedSpeed / PPM / retractDist;
                         b2Body_SetLinearVelocity(phys.bodyId, retractDir);
                     } else {
                         b2Body_SetLinearVelocity(phys.bodyId, {0, 0});
@@ -780,7 +799,6 @@ namespace goldminer {
                 }
             }
             else if (ropeControl.state == RopeControl::State::AtRest) {
-                // If at rest, just keep the body in place
                 b2Body_SetLinearVelocity(phys.bodyId, {0.0f, 0.0f});
             }
 
@@ -788,14 +806,13 @@ namespace goldminer {
             if (ropeControl.state == RopeControl::State::AtRest & World::mask(rope).test(Component<GrabbedJoint>::Bit)) {
                 HandleRopeJointCleanup(rope);
 
-                // Reset rope physics after releasing item
                 b2Body_SetLinearVelocity(phys.bodyId, {0.0f, 0.0f});
                 b2Body_SetAngularVelocity(phys.bodyId, 0.0f);
-                b2Body_SetGravityScale(phys.bodyId, 0.0f); // or 1.0f if you want gravity at rest
-
+                b2Body_SetGravityScale(phys.bodyId, 0.0f);
             }
         }
     }
+
 
 
     /**
