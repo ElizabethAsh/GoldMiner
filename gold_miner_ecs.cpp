@@ -1267,7 +1267,6 @@ void ScoreSystem() {
         }
     }
 
-
     void DrawNumber(SDL_Renderer* renderer, int number, float x, float y) {
         constexpr float SCALE = 0.75f;
         std::string numStr = std::to_string(number);
