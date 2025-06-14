@@ -912,7 +912,7 @@ namespace goldminer {
     }
 
     /**
- * @brief Updates the global game timer.
+    * @brief Updates the global game timer.
  */
     void TimerSystem() {
         Mask mask;
@@ -926,6 +926,7 @@ namespace goldminer {
     }
 
     void DrawNumber(SDL_Renderer* renderer, int number, float x, float y) {
+        constexpr float SCALE = 0.75f;
         std::string numStr = std::to_string(number);
         float offsetX = x;
 
@@ -935,14 +936,19 @@ namespace goldminer {
 
             SDL_Texture* tex = GetSpriteTexture(spriteID);
             SDL_Rect src = GetSpriteSrcRect(spriteID);
-            SDL_FRect dst = {offsetX, y, (float)src.w, (float)src.h};
-            SDL_FRect srcF = { (float)src.x, (float)src.y, (float)src.w, (float)src.h };
+            SDL_FRect dst = {
+                offsetX,
+                y,
+                src.w * SCALE,
+                src.h * SCALE
+            };
+            SDL_FRect srcF = {(float)src.x, (float)src.y, (float)src.w, (float)src.h};
 
             SDL_RenderTexture(renderer, tex, &srcF, &dst);
-
-            offsetX += src.w + 4; // מרווח בין ספרות
+            offsetX += dst.w + 2;
         }
     }
+
 
 
 
@@ -974,9 +980,11 @@ namespace goldminer {
         using namespace bagel;
         using namespace goldminer;
 
-        constexpr float UI_BASE_Y = 20.0f;
-        constexpr float PLAYER_UI_SPACING_X = 300.0f;
+        constexpr float UI_BASE_Y = 4.0f;
+        constexpr float PLAYER_UI_SPACING_X = 10.0f;//לשנות את הערך שנוסיף עוד שחקן
         constexpr float ICON_SPACING = 10.0f;
+        //constexpr float NUMBER_Y_OFFSET = 4.0f;
+
 
         Mask uiMask;
         uiMask.set(Component<UIComponent>::Bit);
@@ -997,7 +1005,7 @@ namespace goldminer {
             const PlayerInfo& uiPlayer = World::getComponent<PlayerInfo>(uiEnt);
             int pid = uiPlayer.playerID;
 
-            float offsetX = 20.0f + pid * PLAYER_UI_SPACING_X;
+            float offsetX = 5.0f + pid * PLAYER_UI_SPACING_X;
 
             // === Score ===
             SDL_Texture* moneyIcon = GetSpriteTexture(SPRITE_TITLE_MONEY);
@@ -1015,6 +1023,7 @@ namespace goldminer {
 
                 const Score& score = World::getComponent<Score>(scoreEnt);
                 DrawNumber(renderer, score.points, moneyDst.x + moneyDst.w + ICON_SPACING, moneyDst.y);
+
                 break;
             }
 
@@ -1034,7 +1043,8 @@ namespace goldminer {
 
                 const GameTimer& timer = World::getComponent<GameTimer>(timerEnt);
                 int seconds = (int)std::ceil(timer.timeLeft);
-                DrawNumber(renderer, seconds, timeDst.x + timeDst.w + ICON_SPACING, timeDst.y);
+                DrawNumber(renderer, seconds, timeDst.x + timeDst.w + ICON_SPACING, timeDst.y );
+
 
                 break;
             }
