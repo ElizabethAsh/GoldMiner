@@ -16,6 +16,8 @@
 
 namespace goldminer {
     b2WorldId gWorld = b2_nullWorldId;
+    int player_id = 0; // Default to 0 = no winner / tie
+    bool game_over = false;
 
     using namespace bagel;
 
@@ -1597,19 +1599,33 @@ namespace goldminer {
             }
 
             if (!playerScores.empty()) {
-                auto winner = std::max_element(
+                auto maxScoreIt = std::max_element(
                     playerScores.begin(), playerScores.end(),
                     [](const auto& a, const auto& b) {
                         return a.second < b.second;
                     });
 
-                std::cout << "\n🎉 GAME OVER! Winner is Player " << winner->first
-                          << " with " << winner->second << " points!\n";
-            } else {
-                std::cout << "\n❗ GAME OVER! No scores found.\n";
+                int maxScore = maxScoreIt->second;
+                std::vector<int> winners;
+
+                for (const auto& p : playerScores) {
+                    if (p.second == maxScore) {
+                        winners.push_back(p.first);
+                    }
+                }
+
+                if (winners.size() == 1) {
+                    player_id = winners[0];
+                    game_over = true;
+                    std::cout << "\n🎉 GAME OVER! Winner is Player " << winners[0]
+                              << " with " << maxScore << " points!\n";
+                } else {
+                    player_id = 0;
+                    game_over = true;
+                    std::cout << "\n⚖️ GAME OVER! It's a tie between players with " << maxScore << " points!\n";
+                }
             }
 
-            // Optional: stop game logic here (e.g., set global flag)
         }
     }
 
