@@ -14,14 +14,21 @@
 #include <SDL3/SDL.h>
 #include <box2d/box2d.h>
 
-namespace goldminer {
+
+namespace bagel
+{
+    struct ent_type;
+}
+
+namespace goldminer
+{
     // Global Box2D world for physics (preview API)
     extern b2WorldId gWorld;
     using id_type = int;
 
-//----------------------------------
-/// @section Components
-//----------------------------------
+    //----------------------------------
+    /// @section Components
+    //----------------------------------
 
     struct Position {
         float x = 0.0f;
@@ -98,6 +105,11 @@ namespace goldminer {
         float remaining = 1.5f;
     };
 
+    struct GrabbedJoint {
+        b2JointId joint = b2_nullJointId;
+        int attachedEntityId = -1;
+    };
+
     struct PhysicsBody {
         b2BodyId bodyId;
     };
@@ -108,14 +120,15 @@ namespace goldminer {
     };
 
 
-//----------------------------------
-/// @section Tags
-//----------------------------------
+    //----------------------------------
+    /// @section Tags
+    //----------------------------------
 
     struct Collectable {};
     struct RoperTag {};
     struct GameOverTag {};
     struct Collidable {};
+    struct DestroyTag {};
 
 //----------------------------------
 /// @section System Declarations
@@ -125,6 +138,7 @@ namespace goldminer {
     void RopeSwingSystem();
     void RopeExtensionSystem();
     void CollisionSystem();
+    void TryAttachCollectable(bagel::ent_type rope, bagel::ent_type collectable);
     void PullObjectSystem();
     void ScoreSystem();
     void TreasureChestSystem();
@@ -134,9 +148,13 @@ namespace goldminer {
     void MoleSystem();
     void LifeTimeSystem();
     void PhysicsSyncSystem();
+    void CollectableVanishSystem();
     void DebugCollisionSystem();
     void RopeRenderSystem(SDL_Renderer* renderer);
     void Box2DDebugRenderSystem(SDL_Renderer* renderer);
+    void HandleRopeJointCleanup(bagel::ent_type rope);
+    void DestructionSystem();
+
 
 //----------------------------------
 /// @section Entity Creation

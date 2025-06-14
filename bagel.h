@@ -15,7 +15,7 @@ namespace bagel
 		int		IdBagSize = 5;
 		int		InitialEntities = 30;
 		int		InitialPackedSize = 5;
-		int		MaxComponents = 10;
+		int		MaxComponents = 50;
 	};
 
 	template <class T> struct Storage;

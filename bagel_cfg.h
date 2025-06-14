@@ -16,6 +16,8 @@ BAGEL_STORAGE(goldminer::Value, bagel::PackedStorage)
 BAGEL_STORAGE(goldminer::Weight, bagel::PackedStorage)
 BAGEL_STORAGE(goldminer::Mole, bagel::PackedStorage)
 BAGEL_STORAGE(goldminer::LifeTime, bagel::PackedStorage)
+BAGEL_STORAGE(goldminer::DestroyTag, bagel::PackedStorage)
+
 
 // Sparse
 BAGEL_STORAGE(goldminer::Rotation, bagel::SparseStorage)
@@ -28,9 +30,11 @@ BAGEL_STORAGE(goldminer::SoundEffect, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::Health, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::Name, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::PhysicsBody, bagel::SparseStorage)
+BAGEL_STORAGE(goldminer::GrabbedJoint, bagel::SparseStorage)
 
 // Tagged
 BAGEL_STORAGE(goldminer::Collectable, bagel::TaggedStorage)
 BAGEL_STORAGE(goldminer::RoperTag, bagel::TaggedStorage)
 BAGEL_STORAGE(goldminer::Collidable, bagel::TaggedStorage)
 BAGEL_STORAGE(goldminer::GameOverTag, bagel::TaggedStorage)
+

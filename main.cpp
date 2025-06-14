@@ -52,7 +52,8 @@ int main() {
             if (e.type == SDL_EVENT_QUIT) {
                 running = false;
             }
-            else if (e.type == SDL_EVENT_KEY_DOWN) {
+            goldminer::PlayerInputSystem(&e);
+            if (e.type == SDL_EVENT_KEY_DOWN) {
                 SDL_Keycode key = e.key.key;
 
                 if (gameState == GameState::MainMenu && key == SDLK_RETURN) {
@@ -79,8 +80,6 @@ int main() {
                     gameState = GameState::MainMenu;
                     // Optional: you can also reset game state here
                 }
-                else
-                    goldminer::PlayerInputSystem(&e);
             }
         }
 
@@ -89,9 +88,7 @@ int main() {
         constexpr int positionIterations = 6;
         b2World_Step(goldminer::gWorld, timeStep, velocityIterations);
 
-        goldminer::PhysicsSyncSystem();
-        goldminer::CollisionSystem();
-        goldminer::DebugCollisionSystem();
+
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
@@ -111,13 +108,20 @@ int main() {
             // Draw background
             SDL_FRect bg = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg);
-
+            goldminer::RopeSwingSystem();
+            goldminer::RopeExtensionSystem();
+            goldminer::PlayerInputSystem(nullptr); // Process player input
+            goldminer::PhysicsSyncSystem();
+            goldminer::CollisionSystem();
+            //goldminer::DebugCollisionSystem();
             // Render ECS entities
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
             goldminer::Box2DDebugRenderSystem(renderer); //not redundant
             goldminer::UISystem(renderer);
 
+
+            goldminer::DestructionSystem();
         }
 
         SDL_RenderPresent(renderer);
