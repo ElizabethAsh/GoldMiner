@@ -537,8 +537,13 @@ namespace goldminer {
 
 
     /**
- * @brief Reads player input and stores it in PlayerInput component.
- */
+     * @brief Reads player input and stores it in PlayerInput component.
+     * If the player's timer has expired, input is ignored.
+     *
+     * This prevents a player from sending the rope once their time has run out.
+     *
+     * @param event Pointer to SDL_Event (keyboard event)
+     */
     void PlayerInputSystem(const SDL_Event* event) {
         if (!event) return;
 
@@ -553,16 +558,39 @@ namespace goldminer {
 
         Mask mask;
         mask.set(Component<PlayerInput>::Bit);
+        mask.set(Component<PlayerInfo>::Bit);
+
+        Mask timerMask;
+        timerMask.set(Component<GameTimer>::Bit);
+        timerMask.set(Component<PlayerInfo>::Bit);
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
             ent_type ent{id};
             if (!World::mask(ent).test(mask)) continue;
 
             auto& input = World::getComponent<PlayerInput>(ent);
+            const auto& player = World::getComponent<PlayerInfo>(ent);
+            int pid = player.playerID;
 
-            input.sendRope = spacePressed;
+            bool hasTime = true;
+
+            for (id_type tid = 0; tid <= World::maxId().id; ++tid) {
+                ent_type timerEnt{tid};
+                if (!World::mask(timerEnt).test(timerMask)) continue;
+
+                const auto& timerPlayer = World::getComponent<PlayerInfo>(timerEnt);
+                if (timerPlayer.playerID != pid) continue;
+
+                const auto& timer = World::getComponent<GameTimer>(timerEnt);
+                if (timer.timeLeft <= 0.0f) {
+                    hasTime = false;
+                }
+            }
+
+            input.sendRope = spacePressed && hasTime;
         }
     }
+
     /**
      * @brief Oscillates rope entities that are currently at rest.
      */
@@ -678,9 +706,8 @@ namespace goldminer {
     /**
      * @brief Handles rope extension and retraction logic.
      */
-    void RopeExtensionSystem() {
-        using namespace bagel;
 
+    void RopeExtensionSystem() {
         Mask mask;
         mask.set(Component<RoperTag>::Bit);
         mask.set(Component<RopeControl>::Bit);
@@ -748,6 +775,7 @@ namespace goldminer {
             b2Vec2 targetPos = { tipX / PPM, tipY / PPM };
             b2Vec2 direction = { targetPos.x - currentPos.x, targetPos.y - currentPos.y };
             float dist = sqrt(direction.x * direction.x + direction.y * direction.y);
+
 
             if (ropeControl.state == RopeControl::State::Extending) {
                 length.value += EXTENSION_SPEED * deltaTime;
@@ -1273,6 +1301,7 @@ namespace goldminer {
         }
     }
 
+
     void DrawNumber(SDL_Renderer* renderer, int number, float x, float y) {
         constexpr float SCALE = 0.75f;
         std::string numStr = std::to_string(number);
@@ -1391,6 +1420,16 @@ namespace goldminer {
 
                 const GameTimer& timer = World::getComponent<GameTimer>(timerEnt);
                 int seconds = (int)std::ceil(timer.timeLeft);
+                if (seconds < 10) {
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 100);  // אדום שקוף
+                    SDL_FRect bgRect = {
+                        timeDst.x + timeDst.w + ICON_SPACING - 10,  // טיפה לפני הספרות
+                        timeDst.y - 5,
+                        55,
+                        55
+                    };
+                    SDL_RenderFillRect(renderer, &bgRect);
+                }
                 DrawNumber(renderer, seconds, timeDst.x + timeDst.w + ICON_SPACING, timeDst.y );
 
 
@@ -1483,6 +1522,62 @@ namespace goldminer {
             if (World::mask(e).test(Component<DestroyTag>::Bit)) World::delComponent<DestroyTag>(e);
         }
 
+    }
+
+    void CheckForGameOverSystem() {
+        using namespace bagel;
+        using namespace goldminer;
+
+        Mask timerMask;
+        timerMask.set(Component<GameTimer>::Bit);
+        timerMask.set(Component<PlayerInfo>::Bit);
+
+        Mask scoreMask;
+        scoreMask.set(Component<Score>::Bit);
+        scoreMask.set(Component<PlayerInfo>::Bit);
+
+        int playersWithTime = 0;
+        std::vector<std::pair<int, int>> playerScores; // {playerID, score}
+
+        for (id_type id = 0; id <= World::maxId().id; ++id) {
+            ent_type ent{id};
+            if (!World::mask(ent).test(timerMask)) continue;
+
+            const GameTimer& timer = World::getComponent<GameTimer>(ent);
+            const PlayerInfo& player = World::getComponent<PlayerInfo>(ent);
+
+            if (timer.timeLeft > 0.0f)
+                playersWithTime++;
+        }
+
+        // If all players have time == 0
+        if (playersWithTime == 0) {
+            // Find winner
+            for (id_type id = 0; id <= World::maxId().id; ++id) {
+                ent_type ent{id};
+                if (!World::mask(ent).test(scoreMask)) continue;
+
+                const Score& score = World::getComponent<Score>(ent);
+                const PlayerInfo& player = World::getComponent<PlayerInfo>(ent);
+
+                playerScores.emplace_back(player.playerID, score.points);
+            }
+
+            if (!playerScores.empty()) {
+                auto winner = std::max_element(
+                    playerScores.begin(), playerScores.end(),
+                    [](const auto& a, const auto& b) {
+                        return a.second < b.second;
+                    });
+
+                std::cout << "\n🎉 GAME OVER! Winner is Player " << winner->first
+                          << " with " << winner->second << " points!\n";
+            } else {
+                std::cout << "\n❗ GAME OVER! No scores found.\n";
+            }
+
+            // Optional: stop game logic here (e.g., set global flag)
+        }
     }
 
     //----------------------------------
