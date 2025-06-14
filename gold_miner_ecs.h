@@ -156,6 +156,7 @@ namespace goldminer
     void Box2DDebugRenderSystem(SDL_Renderer* renderer);
     void HandleRopeJointCleanup(bagel::ent_type rope);
     void DestructionSystem();
+    void CheckForGameOverSystem();
 
 
 //----------------------------------

@@ -530,10 +530,14 @@ namespace goldminer {
     /// @section System Implementations (Skeletons)
     //----------------------------------
 
-
     /**
- * @brief Reads player input and stores it in PlayerInput component.
- */
+     * @brief Reads player input and stores it in PlayerInput component.
+     * If the player's timer has expired, input is ignored.
+     *
+     * This prevents a player from sending the rope once their time has run out.
+     *
+     * @param event Pointer to SDL_Event (keyboard event)
+     */
     void PlayerInputSystem(const SDL_Event* event) {
         if (!event) return;
 
@@ -548,16 +552,39 @@ namespace goldminer {
 
         Mask mask;
         mask.set(Component<PlayerInput>::Bit);
+        mask.set(Component<PlayerInfo>::Bit);
+
+        Mask timerMask;
+        timerMask.set(Component<GameTimer>::Bit);
+        timerMask.set(Component<PlayerInfo>::Bit);
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
             ent_type ent{id};
             if (!World::mask(ent).test(mask)) continue;
 
             auto& input = World::getComponent<PlayerInput>(ent);
+            const auto& player = World::getComponent<PlayerInfo>(ent);
+            int pid = player.playerID;
 
-            input.sendRope = spacePressed;
+            bool hasTime = true;
+
+            for (id_type tid = 0; tid <= World::maxId().id; ++tid) {
+                ent_type timerEnt{tid};
+                if (!World::mask(timerEnt).test(timerMask)) continue;
+
+                const auto& timerPlayer = World::getComponent<PlayerInfo>(timerEnt);
+                if (timerPlayer.playerID != pid) continue;
+
+                const auto& timer = World::getComponent<GameTimer>(timerEnt);
+                if (timer.timeLeft <= 0.0f) {
+                    hasTime = false;
+                }
+            }
+
+            input.sendRope = spacePressed && hasTime;
         }
     }
+
     /**
      * @brief Oscillates rope entities that are currently at rest.
      */
@@ -947,75 +974,75 @@ namespace goldminer {
         }
     }
 
- /**
- * @brief Updates player scores based on collected items.
- *
- * This system scans all entities that:
- * - Are collectable (`Collectable`)
- * - Have a value (`Value`)
- * - Are currently grabbed by a rope (`GrabbedJoint`)
- * - Have NOT been scored yet (`ScoredTag`)
- *
- * For each such entity:
- * - The system finds the rope it's attached to via `GrabbedJoint.attachedEntityId`
- * - Uses the rope's `PlayerInfo` to determine which player collected the item
- * - Increases the player's `Score` by the item's `Value`
- * - Adds `ScoredTag` to mark it as already processed
- *
- * Expected components:
- * - Collectable
- * - Value
- * - GrabbedJoint
- * - Score (for each player)
- * - PlayerInfo (both for rope and score entities)
- *
- * Typical use: Call this system once per frame during the game loop,
- * after `PullObjectSystem()` has updated object positions and grab logic.
- */
-void ScoreSystem() {
-    using namespace bagel;
-    using namespace goldminer;
+     /**
+     * @brief Updates player scores based on collected items.
+     *
+     * This system scans all entities that:
+     * - Are collectable (`Collectable`)
+     * - Have a value (`Value`)
+     * - Are currently grabbed by a rope (`GrabbedJoint`)
+     * - Have NOT been scored yet (`ScoredTag`)
+     *
+     * For each such entity:
+     * - The system finds the rope it's attached to via `GrabbedJoint.attachedEntityId`
+     * - Uses the rope's `PlayerInfo` to determine which player collected the item
+     * - Increases the player's `Score` by the item's `Value`
+     * - Adds `ScoredTag` to mark it as already processed
+     *
+     * Expected components:
+     * - Collectable
+     * - Value
+     * - GrabbedJoint
+     * - Score (for each player)
+     * - PlayerInfo (both for rope and score entities)
+     *
+     * Typical use: Call this system once per frame during the game loop,
+     * after `PullObjectSystem()` has updated object positions and grab logic.
+     */
+    void ScoreSystem() {
+        using namespace bagel;
+        using namespace goldminer;
 
-    Mask itemMask;
-    itemMask.set(Component<Collectable>::Bit);
-    itemMask.set(Component<Value>::Bit);
-    itemMask.set(Component<GrabbedJoint>::Bit);
+        Mask itemMask;
+        itemMask.set(Component<Collectable>::Bit);
+        itemMask.set(Component<Value>::Bit);
+        itemMask.set(Component<GrabbedJoint>::Bit);
 
-    Mask scoreMask;
-    scoreMask.set(Component<Score>::Bit);
-    scoreMask.set(Component<PlayerInfo>::Bit);
+        Mask scoreMask;
+        scoreMask.set(Component<Score>::Bit);
+        scoreMask.set(Component<PlayerInfo>::Bit);
 
-    for (id_type id = 0; id <= World::maxId().id; ++id) {
-        ent_type ent{id};
+        for (id_type id = 0; id <= World::maxId().id; ++id) {
+            ent_type ent{id};
 
-        if (!World::mask(ent).test(itemMask)) continue;
-        if (World::mask(ent).test(Component<ScoredTag>::Bit)) continue; // ✅ already processed
+            if (!World::mask(ent).test(itemMask)) continue;
+            if (World::mask(ent).test(Component<ScoredTag>::Bit)) continue; // ✅ already processed
 
-        const Value& value = World::getComponent<Value>(ent);
-        const GrabbedJoint& joint = World::getComponent<GrabbedJoint>(ent);
-        if (joint.attachedEntityId == -1) continue;
+            const Value& value = World::getComponent<Value>(ent);
+            const GrabbedJoint& joint = World::getComponent<GrabbedJoint>(ent);
+            if (joint.attachedEntityId == -1) continue;
 
-        ent_type ropeEnt{joint.attachedEntityId};
-        if (!World::mask(ropeEnt).test(Component<PlayerInfo>::Bit)) continue;
+            ent_type ropeEnt{joint.attachedEntityId};
+            if (!World::mask(ropeEnt).test(Component<PlayerInfo>::Bit)) continue;
 
-        const PlayerInfo& player = World::getComponent<PlayerInfo>(ropeEnt);
-        int pid = player.playerID;
+            const PlayerInfo& player = World::getComponent<PlayerInfo>(ropeEnt);
+            int pid = player.playerID;
 
-        for (id_type sid = 0; sid <= World::maxId().id; ++sid) {
-            ent_type scoreEnt{sid};
-            if (!World::mask(scoreEnt).test(scoreMask)) continue;
+            for (id_type sid = 0; sid <= World::maxId().id; ++sid) {
+                ent_type scoreEnt{sid};
+                if (!World::mask(scoreEnt).test(scoreMask)) continue;
 
-            const PlayerInfo& scorePlayer = World::getComponent<PlayerInfo>(scoreEnt);
-            if (scorePlayer.playerID != pid) continue;
+                const PlayerInfo& scorePlayer = World::getComponent<PlayerInfo>(scoreEnt);
+                if (scorePlayer.playerID != pid) continue;
 
-            Score& score = World::getComponent<Score>(scoreEnt);
-            score.points += value.amount;
+                Score& score = World::getComponent<Score>(scoreEnt);
+                score.points += value.amount;
 
-            World::addComponent<ScoredTag>(ent, {}); // ✅ mark as processed
-            break;
+                World::addComponent<ScoredTag>(ent, {}); // ✅ mark as processed
+                break;
+            }
         }
     }
-}
 
 
 
@@ -1389,6 +1416,16 @@ void ScoreSystem() {
 
                 const GameTimer& timer = World::getComponent<GameTimer>(timerEnt);
                 int seconds = (int)std::ceil(timer.timeLeft);
+                if (seconds < 10) {
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 100);  // אדום שקוף
+                    SDL_FRect bgRect = {
+                        timeDst.x + timeDst.w + ICON_SPACING - 10,  // טיפה לפני הספרות
+                        timeDst.y - 5,
+                        55,
+                        55
+                    };
+                    SDL_RenderFillRect(renderer, &bgRect);
+                }
                 DrawNumber(renderer, seconds, timeDst.x + timeDst.w + ICON_SPACING, timeDst.y );
 
 
@@ -1497,6 +1534,63 @@ void ScoreSystem() {
         ent_type item{grabbed.attachedEntityId};
         World::addComponent<DestroyTag>(item, {});
     }
+
+    void CheckForGameOverSystem() {
+        using namespace bagel;
+        using namespace goldminer;
+
+        Mask timerMask;
+        timerMask.set(Component<GameTimer>::Bit);
+        timerMask.set(Component<PlayerInfo>::Bit);
+
+        Mask scoreMask;
+        scoreMask.set(Component<Score>::Bit);
+        scoreMask.set(Component<PlayerInfo>::Bit);
+
+        int playersWithTime = 0;
+        std::vector<std::pair<int, int>> playerScores; // {playerID, score}
+
+        for (id_type id = 0; id <= World::maxId().id; ++id) {
+            ent_type ent{id};
+            if (!World::mask(ent).test(timerMask)) continue;
+
+            const GameTimer& timer = World::getComponent<GameTimer>(ent);
+            const PlayerInfo& player = World::getComponent<PlayerInfo>(ent);
+
+            if (timer.timeLeft > 0.0f)
+                playersWithTime++;
+        }
+
+        // If all players have time == 0
+        if (playersWithTime == 0) {
+            // Find winner
+            for (id_type id = 0; id <= World::maxId().id; ++id) {
+                ent_type ent{id};
+                if (!World::mask(ent).test(scoreMask)) continue;
+
+                const Score& score = World::getComponent<Score>(ent);
+                const PlayerInfo& player = World::getComponent<PlayerInfo>(ent);
+
+                playerScores.emplace_back(player.playerID, score.points);
+            }
+
+            if (!playerScores.empty()) {
+                auto winner = std::max_element(
+                    playerScores.begin(), playerScores.end(),
+                    [](const auto& a, const auto& b) {
+                        return a.second < b.second;
+                    });
+
+                std::cout << "\n🎉 GAME OVER! Winner is Player " << winner->first
+                          << " with " << winner->second << " points!\n";
+            } else {
+                std::cout << "\n❗ GAME OVER! No scores found.\n";
+            }
+
+            // Optional: stop game logic here (e.g., set global flag)
+        }
+    }
+
 
 
 } // namespace goldminer
