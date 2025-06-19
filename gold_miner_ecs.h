@@ -179,7 +179,7 @@ namespace goldminer
 /// @section Entity Creation
 //----------------------------------
 
-    id_type CreatePlayer(int playerID, SpriteID sprite);
+    id_type CreatePlayer(int playerID, SpriteID sprite, float time);
     id_type CreateRope(int playerID);
     id_type CreateGold(float x, float y);
     id_type CreateRock(float x, float y);
