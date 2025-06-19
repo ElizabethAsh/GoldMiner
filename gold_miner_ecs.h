@@ -63,7 +63,7 @@ namespace goldminer
     };
 
     struct ItemType {
-        enum class Type { Gold, Rock, Diamond, TreasureChest, MysteryBag  } type = Type::Gold;
+        enum class Type { Gold, Rock, Diamond, TreasureChest  } type = Type::Gold;
     };
 
     struct Value {
@@ -90,20 +90,6 @@ namespace goldminer
         int soundID = -1; ///< Placeholder for sound index
     };
 
-
-    struct Health {
-        int hp = 1;
-    };
-
-    struct Mole {
-        float speed = 100.0f;
-        bool movingRight = true;
-    };
-
-    struct LifeTime {
-        float remaining = 1.5f;
-    };
-
     struct GrabbedJoint {
         b2JointId joint = b2_nullJointId;
         int attachedEntityId = -1;
@@ -119,7 +105,6 @@ namespace goldminer
     };
 
     struct ScoredTag {};
-
 
     //----------------------------------
     /// @section Tags

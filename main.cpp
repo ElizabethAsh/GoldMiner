@@ -121,8 +121,6 @@ int main() {
             goldminer::PhysicsSyncSystem();
             goldminer::CollisionSystem();
             goldminer::CheckForGameOverSystem();
-
-
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
             goldminer::UISystem(renderer);
