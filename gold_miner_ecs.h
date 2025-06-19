@@ -53,8 +53,6 @@ namespace goldminer
     using id_type = int;
     extern id_type player_id;
     extern bool game_over ;
-    extern SpriteID player1Sprite;
-    extern SpriteID player2Sprite;
 
 
     //----------------------------------
@@ -188,7 +186,7 @@ namespace goldminer
 /// @section Entity Creation
 //----------------------------------
 
-    id_type CreatePlayer(int playerID);
+    id_type CreatePlayer(int playerID, SpriteID sprite);
     id_type CreateRope(int playerID);
     id_type CreateGold(float x, float y);
     id_type CreateRock(float x, float y);
