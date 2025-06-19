@@ -90,9 +90,6 @@ namespace goldminer
         int soundID = -1; ///< Placeholder for sound index
     };
 
-    struct Name {
-        std::string label;
-    };
 
     struct Health {
         int hp = 1;
@@ -140,25 +137,22 @@ namespace goldminer
     void initBox2DWorld();
     void PlayerInputSystem(const SDL_Event* event);
     void RopeSwingSystem();
-    void RopeExtensionSystem();
+    void RopeExtensionAndPullSystem();
     void CollisionSystem();
-    void TryAttachCollectable(bagel::ent_type rope, bagel::ent_type collectable);
-    void PullObjectSystem();
     void ScoreSystem();
-    void TreasureChestSystem();
     void RenderSystem(SDL_Renderer* renderer);
     void GameTimerSystem(float deltaTime);
     void UISystem(SDL_Renderer* renderer);
-    void MoleSystem();
-    void LifeTimeSystem();
     void PhysicsSyncSystem();
-    void CollectableVanishSystem();
-    void DebugCollisionSystem();
     void RopeRenderSystem(SDL_Renderer* renderer);
     void Box2DDebugRenderSystem(SDL_Renderer* renderer);
-    void HandleRopeJointCleanup(bagel::ent_type rope);
     void DestructionSystem();
     void CheckForGameOverSystem();
+
+    // helpers:
+    SDL_FPoint GetSpriteOffset(int spriteID);
+    void TryAttachCollectable(bagel::ent_type rope, bagel::ent_type collectable);
+    void HandleRopeJointCleanup(bagel::ent_type rope);
 
 
 //----------------------------------
@@ -170,11 +164,8 @@ namespace goldminer
     id_type CreateGold(float x, float y);
     id_type CreateRock(float x, float y);
     id_type CreateDiamond(float x, float y);
-    id_type CreateMysteryBag(float x, float y);
     id_type CreateTreasureChest(float x, float y);
-    id_type CreateTimer();
     id_type CreateUIEntity(int playerID);
-    id_type CreateMole(float x, float y);
 
     //----------------------------------
     /// @section Game's Layout
@@ -191,17 +182,11 @@ enum SpriteID {
     SPRITE_ROCK,
     SPRITE_DIAMOND,
     SPRITE_TREASURE_CHEST,
-    SPRITE_MYSTERY_BAG,
     SPRITE_BOMB,
     SPRITE_PLAYER_IDLE,
-    SPRITE_PLAYER_PULL1,
-    SPRITE_PLAYER_PULL2,
     SPRITE_TITLE_MONEY,
     SPRITE_TITLE_TIME,
-    SPRITE_TIMER,
     SPRITE_BACKGROUND,
-    SPRITE_PRESS_ENTER_TO_START, // New sprite for the main menu text
-    SPRITE_PAUSED_TEXT,          // New sprite for the pause menu text
     SPRITE_DIGIT_0,
     SPRITE_DIGIT_1,
     SPRITE_DIGIT_2,
@@ -212,7 +197,6 @@ enum SpriteID {
     SPRITE_DIGIT_7,
     SPRITE_DIGIT_8,
     SPRITE_DIGIT_9,
-
 
     SPRITE_COUNT
 };
