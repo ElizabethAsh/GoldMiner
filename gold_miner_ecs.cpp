@@ -1072,9 +1072,11 @@ namespace goldminer {
             float scale = 1.0f;
 
             // Apply scale only to player sprites (to shrink them)
-            if (render.spriteID == SPRITE_PLAYER_AMAL || render.spriteID == SPRITE_PLAYER_OFEK ||
-                render.spriteID == SPRITE_PLAYER_ELIZABETH || render.spriteID == SPRITE_PLAYER_NOA) {
+            if (render.spriteID == SPRITE_PLAYER_AMAL || render.spriteID == SPRITE_PLAYER_NOA) {
                 scale = 164.0f / 1000.0f; // match width to old size (~0.164)
+            }
+            if (render.spriteID == SPRITE_PLAYER_ELIZABETH || render.spriteID == SPRITE_PLAYER_OFEK) {
+                scale = 164.0f / 900.0f;
             }
 
             SDL_FRect dest = {

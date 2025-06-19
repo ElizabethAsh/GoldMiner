@@ -30,7 +30,7 @@ void LoadAllSprites(SDL_Renderer* renderer) {
     gTextures[SPRITE_PLAYER_AMAL]      = LoadTexture(renderer, "res/Player_Amal.png");
     gTextures[SPRITE_PLAYER_OFEK]      = LoadTexture(renderer, "res/Player_Ofek.png");
     gTextures[SPRITE_PLAYER_NOA]       = LoadTexture(renderer, "res/Player_Noa.png");
-    gTextures[SPRITE_PLAYER_ELIZABETH] = LoadTexture(renderer, "res/Player_Elizabeth.png");
+    gTextures[SPRITE_PLAYER_ELIZABETH] = LoadTexture(renderer, "res/Player_Elizabeth11.png");
 
     gSrcRects[SPRITE_GOLD] = {0, 0, 35, 30};
     gSrcRects[SPRITE_ROCK] = {0, 0, 77, 87};
