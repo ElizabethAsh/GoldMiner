@@ -27,7 +27,10 @@ enum SpriteID {
     SPRITE_PLAYER_ELIZABETH,
     SPRITE_TITLE_MONEY,
     SPRITE_TITLE_TIME,
-    SPRITE_BACKGROUND,
+//    SPRITE_BACKGROUND,
+    SPRITE_BACKGROUND_LEVEL1,
+    SPRITE_BACKGROUND_LEVEL2,
+    SPRITE_BACKGROUND_LEVEL3,
     SPRITE_DIGIT_0,
     SPRITE_DIGIT_1,
     SPRITE_DIGIT_2,
@@ -55,7 +58,6 @@ namespace goldminer
     using id_type = int;
     extern id_type player_id;
     extern bool game_over ;
-
 
     //----------------------------------
     /// @section Components
@@ -92,7 +94,7 @@ namespace goldminer
     };
 
     struct ItemType {
-        enum class Type { Gold, Rock, Diamond, TreasureChest, MysteryBag  } type = Type::Gold;
+        enum class Type { Gold, Rock, Diamond, TreasureChest  } type = Type::Gold;
     };
 
     struct Value {
@@ -119,20 +121,6 @@ namespace goldminer
         int soundID = -1; ///< Placeholder for sound index
     };
 
-
-    struct Health {
-        int hp = 1;
-    };
-
-    struct Mole {
-        float speed = 100.0f;
-        bool movingRight = true;
-    };
-
-    struct LifeTime {
-        float remaining = 1.5f;
-    };
-
     struct GrabbedJoint {
         b2JointId joint = b2_nullJointId;
         int attachedEntityId = -1;
@@ -147,8 +135,11 @@ namespace goldminer
         bool retractRope = false;
     };
 
-    struct ScoredTag {};
+    struct LevelInfo {
+        SpriteID background = SPRITE_BACKGROUND_LEVEL1;
+    };
 
+    struct ScoredTag {};
 
     //----------------------------------
     /// @section Tags

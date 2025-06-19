@@ -161,10 +161,17 @@ int main() {
             }
         }
         else if (gameState == GameState::Playing) {
-            SDL_FRect bg1 = {0, 0, 640, 720};
-            SDL_FRect bg2 = {640, 0, 640, 720};
-            SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg1);
-            SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg2);
+            SDL_FRect bg1 = {0, 0, 1280, 720};
+            SpriteID bgID = SPRITE_BACKGROUND_LEVEL1;
+            for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
+                bagel::ent_type ent{i};
+                if (bagel::World::mask(ent).test(bagel::Component<goldminer::LevelInfo>::Bit)) {
+                    bgID = bagel::World::getComponent<goldminer::LevelInfo>(ent).background;
+                    break;
+                }
+            }
+
+            SDL_RenderTexture(renderer, GetSpriteTexture(bgID), nullptr, &bg1);
 
             goldminer::GameTimerSystem(timeStep);
             goldminer::RopeSwingSystem();
@@ -174,7 +181,6 @@ int main() {
             goldminer::PhysicsSyncSystem();
             goldminer::CollisionSystem();
             goldminer::CheckForGameOverSystem();
-
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
             goldminer::UISystem(renderer);
