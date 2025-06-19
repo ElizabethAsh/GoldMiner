@@ -18,6 +18,9 @@ namespace goldminer {
     b2WorldId gWorld = b2_nullWorldId;
     int player_id = 0; // Default to 0 = no winner / tie
     bool game_over = false;
+    SpriteID player1Sprite = SPRITE_PLAYER_IDLE;
+    SpriteID player2Sprite = SPRITE_PLAYER_IDLE;
+
 
     using namespace bagel;
 
@@ -59,7 +62,7 @@ namespace goldminer {
         e.addAll(
             Position{startX, startY},
             Velocity{},
-            Renderable{SPRITE_PLAYER_IDLE},
+            Renderable{(playerID == 1 ? player1Sprite : player2Sprite)},
             PlayerInfo{playerID},
             Score{0},
             PlayerInput{}
@@ -1035,8 +1038,8 @@ namespace goldminer {
     }
 
     /**
-     * @brief Renders all entities with a position and sprite.
-     */
+ * @brief Renders all entities with a position and sprite.
+ */
     void RenderSystem(SDL_Renderer* renderer) {
         using namespace bagel;
         using namespace goldminer;
@@ -1064,16 +1067,25 @@ namespace goldminer {
                 static_cast<float>(rect.h)
             };
 
+            // Default scale
+            float scale = 1.0f;
+
+            // Apply scale only to player sprites (to shrink them)
+            if (render.spriteID == SPRITE_PLAYER_AMAL || render.spriteID == SPRITE_PLAYER_OFEK) {
+                scale = 164.0f / 1000.0f; // match width to old size (~0.164)
+            }
+
             SDL_FRect dest = {
                 pos.x,
                 pos.y,
-                src.w,
-                src.h
+                src.w * scale,
+                src.h * scale
             };
 
             SDL_RenderTexture(renderer, texture, &src, &dest);
         }
     }
+
 
     /**
      * @brief Draws rope lines for all rope entities using their Box2D position.
