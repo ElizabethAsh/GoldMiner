@@ -7,6 +7,7 @@
 #include "bagel.h"
 
 #include <iostream>
+#include <array>
 
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
@@ -18,11 +19,20 @@ enum class GameState {
     GameOver
 };
 
-SpriteID player1Sprite = SPRITE_PLAYER_AMAL;
-SpriteID player2Sprite = SPRITE_PLAYER_OFEK;
+SpriteID player1Sprite = SPRITE_PLAYER_IDLE;
+SpriteID player2Sprite = SPRITE_PLAYER_IDLE;
 
 int selectionP1 = 0;
 int selectionP2 = 0;
+
+std::array<SpriteID, 5> availableSprites = {
+    SPRITE_PLAYER_IDLE,
+    SPRITE_PLAYER_AMAL,
+    SPRITE_PLAYER_OFEK,
+    SPRITE_PLAYER_NOA,
+    SPRITE_PLAYER_ELIZABETH
+};
+
 bool p1Confirmed = false;
 bool p2Confirmed = false;
 
@@ -72,20 +82,21 @@ int main() {
                 }
                 else if (gameState == GameState::CharacterSelect) {
                     if (!p1Confirmed) {
-                        if (key == SDLK_LEFT || key == SDLK_RIGHT) selectionP1 = 1 - selectionP1;
+                        if (key == SDLK_LEFT) selectionP1 = (selectionP1 + availableSprites.size() - 1) % availableSprites.size();
+                        else if (key == SDLK_RIGHT) selectionP1 = (selectionP1 + 1) % availableSprites.size();
                         else if (key == SDLK_RETURN) p1Confirmed = true;
                     } else if (!p2Confirmed) {
-                        if (key == SDLK_LEFT || key == SDLK_RIGHT) selectionP2 = 1 - selectionP2;
+                        if (key == SDLK_LEFT) selectionP2 = (selectionP2 + availableSprites.size() - 1) % availableSprites.size();
+                        else if (key == SDLK_RIGHT) selectionP2 = (selectionP2 + 1) % availableSprites.size();
                         else if (key == SDLK_RETURN) p2Confirmed = true;
                     }
 
                     if (p1Confirmed && p2Confirmed) {
-                        player1Sprite = (selectionP1 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
-                        player2Sprite = (selectionP2 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
-
+                        player1Sprite = availableSprites[selectionP1];
+                        player2Sprite = availableSprites[selectionP2];
 
                         goldminer::CreatePlayer(1, player1Sprite);
-                        goldminer::CreatePlayer(2,player2Sprite);
+                        goldminer::CreatePlayer(2, player2Sprite);
                         goldminer::CreateRope(1);
                         goldminer::CreateRope(2);
 
@@ -135,11 +146,8 @@ int main() {
             SDL_FRect dst1 = {SCREEN_WIDTH / 4 - 82, 200, 164, 169};
             SDL_FRect dst2 = {3 * SCREEN_WIDTH / 4 - 82, 200, 164, 169};
 
-            SpriteID p1 = (selectionP1 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
-            SpriteID p2 = (selectionP2 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
-
-            SDL_Rect src1 = GetSpriteSrcRect(p1);
-            SDL_Rect src2 = GetSpriteSrcRect(p2);
+            SpriteID p1 = availableSprites[selectionP1];
+            SpriteID p2 = availableSprites[selectionP2];
 
             SDL_RenderTexture(renderer, GetSpriteTexture(p1), nullptr, &dst1);
             SDL_RenderTexture(renderer, GetSpriteTexture(p2), nullptr, &dst2);

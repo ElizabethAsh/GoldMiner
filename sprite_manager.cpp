@@ -25,8 +25,10 @@ void LoadAllSprites(SDL_Renderer* renderer) {
     gTextures[SPRITE_TREASURE_CHEST] = LoadTexture(renderer, "res/treasureChest.png");
     gTextures[SPRITE_TITLE_MONEY] = LoadTexture(renderer, "res/titleMoney.png");
     gTextures[SPRITE_TITLE_TIME]  = LoadTexture(renderer, "res/titleTime.png");
-    gTextures[SPRITE_PLAYER_AMAL] = LoadTexture(renderer, "res/PlayerAmal.png");
-    gTextures[SPRITE_PLAYER_OFEK] = LoadTexture(renderer, "res/PlayerOfek.png");
+    gTextures[SPRITE_PLAYER_AMAL]      = LoadTexture(renderer, "res/Player_Amal1.png");
+    gTextures[SPRITE_PLAYER_OFEK]      = LoadTexture(renderer, "res/Player_Ofek.png");
+    gTextures[SPRITE_PLAYER_NOA]       = LoadTexture(renderer, "res/Player_Noa.png");
+    gTextures[SPRITE_PLAYER_ELIZABETH] = LoadTexture(renderer, "res/Player_Elizabeth.png");
 
 
     gSrcRects[SPRITE_GOLD] = {0, 0, 35, 30};
@@ -39,8 +41,10 @@ void LoadAllSprites(SDL_Renderer* renderer) {
     gSrcRects[SPRITE_TREASURE_CHEST] = {33, 50, 88, 82};
     gSrcRects[SPRITE_TITLE_MONEY] = {0, 0, 112, 32};
     gSrcRects[SPRITE_TITLE_TIME]  = {0, 0, 83, 25};
-    gSrcRects[SPRITE_PLAYER_AMAL] = {0, 0, 1000, 1001};
-    gSrcRects[SPRITE_PLAYER_OFEK] = {0, 0, 1000, 1001};
+    gSrcRects[SPRITE_PLAYER_AMAL]      = {0, 0, 1000, 1001};
+    gSrcRects[SPRITE_PLAYER_OFEK]      = {0, 0, 1012, 1403};
+    gSrcRects[SPRITE_PLAYER_NOA]       = {0, 0, 1000, 1001};
+    gSrcRects[SPRITE_PLAYER_ELIZABETH] = {0, 0, 1000, 1001};
 
 
     LoadDigitSprite(renderer);
