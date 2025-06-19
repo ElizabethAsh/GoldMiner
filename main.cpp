@@ -13,9 +13,18 @@ const int SCREEN_HEIGHT = 720;
 
 enum class GameState {
     MainMenu,
+    CharacterSelect,
     Playing,
     GameOver
 };
+
+SpriteID player1Sprite = SPRITE_PLAYER_AMAL;
+SpriteID player2Sprite = SPRITE_PLAYER_OFEK;
+
+int selectionP1 = 0;
+int selectionP2 = 0;
+bool p1Confirmed = false;
+bool p2Confirmed = false;
 
 int main() {
     std::cout << "Starting Gold Miner ECS...\n";
@@ -55,38 +64,57 @@ int main() {
                 SDL_Keycode key = e.key.key;
 
                 if (gameState == GameState::MainMenu && key == SDLK_RETURN) {
-                    // === Initialize game ===
-                    goldminer::CreatePlayer(1);
-                    goldminer::CreatePlayer(2);
-
-                    goldminer::CreateRope(1);
-                    goldminer::CreateRope(2);
-
-                    // Random layout
-                    int layout = rand() % 3;
-                    switch (layout) {
-                        case 0: goldminer::LoadLayout1(); break;
-                        case 1: goldminer::LoadLayout2(); break;
-                        case 2: goldminer::LoadLayout3(); break;
+                    gameState = GameState::CharacterSelect;
+                    selectionP1 = 0;
+                    selectionP2 = 0;
+                    p1Confirmed = false;
+                    p2Confirmed = false;
+                }
+                else if (gameState == GameState::CharacterSelect) {
+                    if (!p1Confirmed) {
+                        if (key == SDLK_LEFT || key == SDLK_RIGHT) selectionP1 = 1 - selectionP1;
+                        else if (key == SDLK_RETURN) p1Confirmed = true;
+                    } else if (!p2Confirmed) {
+                        if (key == SDLK_LEFT || key == SDLK_RIGHT) selectionP2 = 1 - selectionP2;
+                        else if (key == SDLK_RETURN) p2Confirmed = true;
                     }
 
-                    goldminer::CreateUIEntity(1);
-                    goldminer::CreateUIEntity(2);
+                    if (p1Confirmed && p2Confirmed) {
+                        goldminer::player1Sprite = (selectionP1 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
+                        goldminer::player2Sprite = (selectionP2 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
 
-                    bagel::Entity score1 = bagel::Entity::create();
-                    score1.addAll(goldminer::Score{0}, goldminer::PlayerInfo{1});
 
-                    bagel::Entity score2 = bagel::Entity::create();
-                    score2.addAll(goldminer::Score{0}, goldminer::PlayerInfo{2});
+                        goldminer::CreatePlayer(1);
+                        goldminer::CreatePlayer(2);
+                        goldminer::CreateRope(1);
+                        goldminer::CreateRope(2);
 
-                    bagel::Entity timer1 = bagel::Entity::create();
-                    timer1.addAll(goldminer::GameTimer{30.0f}, goldminer::PlayerInfo{1});
+                        int layout = rand() % 3;
+                        switch (layout) {
+                            case 0: goldminer::LoadLayout1(); break;
+                            case 1: goldminer::LoadLayout2(); break;
+                            case 2: goldminer::LoadLayout3(); break;
+                        }
 
-                    bagel::Entity timer2 = bagel::Entity::create();
-                    timer2.addAll(goldminer::GameTimer{30.0f}, goldminer::PlayerInfo{2});
+                        goldminer::CreateUIEntity(1);
+                        goldminer::CreateUIEntity(2);
 
-                    gameState = GameState::Playing;
-                } else if (gameState == GameState::Playing && key == SDLK_ESCAPE) {
+                        bagel::Entity score1 = bagel::Entity::create();
+                        score1.addAll(goldminer::Score{0}, goldminer::PlayerInfo{1});
+
+                        bagel::Entity score2 = bagel::Entity::create();
+                        score2.addAll(goldminer::Score{0}, goldminer::PlayerInfo{2});
+
+                        bagel::Entity timer1 = bagel::Entity::create();
+                        timer1.addAll(goldminer::GameTimer{30.0f}, goldminer::PlayerInfo{1});
+
+                        bagel::Entity timer2 = bagel::Entity::create();
+                        timer2.addAll(goldminer::GameTimer{30.0f}, goldminer::PlayerInfo{2});
+
+                        gameState = GameState::Playing;
+                    }
+                }
+                else if (gameState == GameState::Playing && key == SDLK_ESCAPE) {
                     gameState = GameState::MainMenu;
                 }
             }
@@ -94,7 +122,6 @@ int main() {
 
         constexpr float timeStep = 1.0f / 60.0f;
         constexpr int velocityIterations = 8;
-        constexpr int positionIterations = 3;
         b2World_Step(goldminer::gWorld, timeStep, velocityIterations);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -104,15 +131,33 @@ int main() {
             SDL_FRect dstRect = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SDL_RenderTexture(renderer, menuTexture, nullptr, &dstRect);
         }
+        else if (gameState == GameState::CharacterSelect) {
+            SDL_FRect dst1 = {SCREEN_WIDTH / 4 - 82, 200, 164, 169};
+            SDL_FRect dst2 = {3 * SCREEN_WIDTH / 4 - 82, 200, 164, 169};
+
+            SpriteID p1 = (selectionP1 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
+            SpriteID p2 = (selectionP2 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
+
+            SDL_Rect src1 = GetSpriteSrcRect(p1);
+            SDL_Rect src2 = GetSpriteSrcRect(p2);
+
+            SDL_RenderTexture(renderer, GetSpriteTexture(p1), nullptr, &dst1);
+            SDL_RenderTexture(renderer, GetSpriteTexture(p2), nullptr, &dst2);
+
+            if (!p1Confirmed) {
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                SDL_RenderRect(renderer, &dst1);
+            } else if (!p2Confirmed) {
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                SDL_RenderRect(renderer, &dst2);
+            }
+        }
         else if (gameState == GameState::Playing) {
-            // === Two backgrounds side by side ===
             SDL_FRect bg1 = {0, 0, 640, 720};
             SDL_FRect bg2 = {640, 0, 640, 720};
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg1);
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg2);
 
-
-            // Systems
             goldminer::GameTimerSystem(timeStep);
             goldminer::RopeSwingSystem();
             goldminer::ScoreSystem();
@@ -122,7 +167,6 @@ int main() {
             goldminer::CollisionSystem();
             goldminer::CheckForGameOverSystem();
 
-
             goldminer::RenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
             goldminer::UISystem(renderer);
@@ -131,21 +175,13 @@ int main() {
             if (goldminer::game_over) {
                 gameState = GameState::GameOver;
             }
-
-
         }
         else if (gameState == GameState::GameOver) {
             int winner = goldminer::player_id;
-
             SDL_Texture* winTexture = nullptr;
-
-            if (winner == 1) {
-                winTexture = IMG_LoadTexture(renderer, "res/Player1WINS.png");
-            } else if (winner == 2) {
-                winTexture = IMG_LoadTexture(renderer, "res/Player2WINS.png");
-            } else {
-                winTexture = IMG_LoadTexture(renderer, "res/tie.png");
-            }
+            if (winner == 1) winTexture = IMG_LoadTexture(renderer, "res/Player1WINS.png");
+            else if (winner == 2) winTexture = IMG_LoadTexture(renderer, "res/Player2WINS.png");
+            else winTexture = IMG_LoadTexture(renderer, "res/tie.png");
 
             if (winTexture) {
                 SDL_FRect dstRect = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
@@ -157,7 +193,7 @@ int main() {
         }
 
         SDL_RenderPresent(renderer);
-        SDL_Delay(16);  // ~60 FPS
+        SDL_Delay(16);
     }
 
     SDL_DestroyTexture(menuTexture);

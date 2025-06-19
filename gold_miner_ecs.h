@@ -14,6 +14,32 @@
 #include <SDL3/SDL.h>
 #include <box2d/box2d.h>
 
+enum SpriteID {
+    SPRITE_GOLD = 0,
+    SPRITE_ROCK,
+    SPRITE_DIAMOND,
+    SPRITE_TREASURE_CHEST,
+    SPRITE_BOMB,
+    SPRITE_PLAYER_IDLE,
+    SPRITE_PLAYER_AMAL,
+    SPRITE_PLAYER_OFEK,
+    SPRITE_TITLE_MONEY,
+    SPRITE_TITLE_TIME,
+    SPRITE_BACKGROUND,
+    SPRITE_DIGIT_0,
+    SPRITE_DIGIT_1,
+    SPRITE_DIGIT_2,
+    SPRITE_DIGIT_3,
+    SPRITE_DIGIT_4,
+    SPRITE_DIGIT_5,
+    SPRITE_DIGIT_6,
+    SPRITE_DIGIT_7,
+    SPRITE_DIGIT_8,
+    SPRITE_DIGIT_9,
+
+
+    SPRITE_COUNT
+};
 
 namespace bagel
 {
@@ -27,6 +53,9 @@ namespace goldminer
     using id_type = int;
     extern id_type player_id;
     extern bool game_over ;
+    extern SpriteID player1Sprite;
+    extern SpriteID player2Sprite;
+
 
     //----------------------------------
     /// @section Components
@@ -177,28 +206,5 @@ namespace goldminer
 
 } // namespace goldminer
 
-enum SpriteID {
-    SPRITE_GOLD = 0,
-    SPRITE_ROCK,
-    SPRITE_DIAMOND,
-    SPRITE_TREASURE_CHEST,
-    SPRITE_BOMB,
-    SPRITE_PLAYER_IDLE,
-    SPRITE_TITLE_MONEY,
-    SPRITE_TITLE_TIME,
-    SPRITE_BACKGROUND,
-    SPRITE_DIGIT_0,
-    SPRITE_DIGIT_1,
-    SPRITE_DIGIT_2,
-    SPRITE_DIGIT_3,
-    SPRITE_DIGIT_4,
-    SPRITE_DIGIT_5,
-    SPRITE_DIGIT_6,
-    SPRITE_DIGIT_7,
-    SPRITE_DIGIT_8,
-    SPRITE_DIGIT_9,
-
-    SPRITE_COUNT
-};
 
 #endif // GOLD_MINER_ECS_H
