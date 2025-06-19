@@ -80,12 +80,12 @@ int main() {
                     }
 
                     if (p1Confirmed && p2Confirmed) {
-                        goldminer::player1Sprite = (selectionP1 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
-                        goldminer::player2Sprite = (selectionP2 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
+                        player1Sprite = (selectionP1 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
+                        player2Sprite = (selectionP2 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
 
 
-                        goldminer::CreatePlayer(1);
-                        goldminer::CreatePlayer(2);
+                        goldminer::CreatePlayer(1, player1Sprite);
+                        goldminer::CreatePlayer(2,player2Sprite);
                         goldminer::CreateRope(1);
                         goldminer::CreateRope(2);
 

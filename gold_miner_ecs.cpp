@@ -45,14 +45,15 @@ namespace goldminer {
     /// @section Entity Creation Functions
     //----------------------------------
 
-     /**
-     * @brief Creates a new player entity positioned inside their blue arch area.
-     * Each player stands in the center of their screen half.
-     *
-     * @param playerID The identifier of the player (1 or 2).
-     * @return The ID of the created entity.
-     */
-    id_type CreatePlayer(int playerID) {
+        /**
+    * @brief Creates a new player entity positioned inside their blue arch area.
+    * Each player stands in the center of their screen half.
+    *
+    * @param playerID The identifier of the player (1 or 2).
+    * @param sprite The sprite to use for this player.
+    * @return The ID of the created entity.
+    */
+    id_type CreatePlayer(int playerID, SpriteID sprite) {
         Entity e = Entity::create();
 
         // Calculate position based on screen half (each half is 640px wide)
@@ -62,7 +63,7 @@ namespace goldminer {
         e.addAll(
             Position{startX, startY},
             Velocity{},
-            Renderable{(playerID == 1 ? player1Sprite : player2Sprite)},
+            Renderable{sprite},
             PlayerInfo{playerID},
             Score{0},
             PlayerInput{}
