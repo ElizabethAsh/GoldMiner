@@ -80,12 +80,10 @@ int main() {
                     }
 
                     if (p1Confirmed && p2Confirmed) {
-                        goldminer::player1Sprite = (selectionP1 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
-                        goldminer::player2Sprite = (selectionP2 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
-
-
-                        goldminer::CreatePlayer(1);
-                        goldminer::CreatePlayer(2);
+                        player1Sprite = (selectionP1 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
+                        player2Sprite = (selectionP2 == 0) ? SPRITE_PLAYER_AMAL : SPRITE_PLAYER_OFEK;
+                        goldminer::CreatePlayer(1, player1Sprite);
+                        goldminer::CreatePlayer(2,player2Sprite);
                         goldminer::CreateRope(1);
                         goldminer::CreateRope(2);
 
@@ -153,10 +151,17 @@ int main() {
             }
         }
         else if (gameState == GameState::Playing) {
-            SDL_FRect bg1 = {0, 0, 640, 720};
-            SDL_FRect bg2 = {640, 0, 640, 720};
-            SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg1);
-            SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_BACKGROUND), nullptr, &bg2);
+            SDL_FRect bg1 = {0, 0, 1280, 720};
+            SpriteID bgID = SPRITE_BACKGROUND_LEVEL1;
+            for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
+                bagel::ent_type ent{i};
+                if (bagel::World::mask(ent).test(bagel::Component<goldminer::LevelInfo>::Bit)) {
+                    bgID = bagel::World::getComponent<goldminer::LevelInfo>(ent).background;
+                    break;
+                }
+            }
+
+            SDL_RenderTexture(renderer, GetSpriteTexture(bgID), nullptr, &bg1);
 
             goldminer::GameTimerSystem(timeStep);
             goldminer::RopeSwingSystem();

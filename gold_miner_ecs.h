@@ -25,7 +25,10 @@ enum SpriteID {
     SPRITE_PLAYER_OFEK,
     SPRITE_TITLE_MONEY,
     SPRITE_TITLE_TIME,
-    SPRITE_BACKGROUND,
+//    SPRITE_BACKGROUND,
+    SPRITE_BACKGROUND_LEVEL1,
+    SPRITE_BACKGROUND_LEVEL2,
+    SPRITE_BACKGROUND_LEVEL3,
     SPRITE_DIGIT_0,
     SPRITE_DIGIT_1,
     SPRITE_DIGIT_2,
@@ -53,9 +56,6 @@ namespace goldminer
     using id_type = int;
     extern id_type player_id;
     extern bool game_over ;
-    extern SpriteID player1Sprite;
-    extern SpriteID player2Sprite;
-
 
     //----------------------------------
     /// @section Components
@@ -133,6 +133,10 @@ namespace goldminer
         bool retractRope = false;
     };
 
+    struct LevelInfo {
+        SpriteID background = SPRITE_BACKGROUND_LEVEL1;
+    };
+
     struct ScoredTag {};
 
     //----------------------------------
@@ -173,7 +177,7 @@ namespace goldminer
 /// @section Entity Creation
 //----------------------------------
 
-    id_type CreatePlayer(int playerID);
+    id_type CreatePlayer(int playerID, SpriteID sprite);
     id_type CreateRope(int playerID);
     id_type CreateGold(float x, float y);
     id_type CreateRock(float x, float y);
