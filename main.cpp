@@ -116,7 +116,7 @@ int main() {
             goldminer::GameTimerSystem(timeStep);
             goldminer::RopeSwingSystem();
             goldminer::ScoreSystem();
-            goldminer::RopeExtensionSystem();
+            goldminer::RopeExtensionAndPullSystem();
             goldminer::PlayerInputSystem(nullptr);
             goldminer::PhysicsSyncSystem();
             goldminer::CollisionSystem();

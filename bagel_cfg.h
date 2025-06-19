@@ -28,7 +28,6 @@ BAGEL_STORAGE(goldminer::GameTimer, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::PlayerInput, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::SoundEffect, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::Health, bagel::SparseStorage)
-BAGEL_STORAGE(goldminer::Name, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::PhysicsBody, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::GrabbedJoint, bagel::SparseStorage)
 
