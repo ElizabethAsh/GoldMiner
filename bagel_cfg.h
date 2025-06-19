@@ -14,8 +14,6 @@ BAGEL_STORAGE(goldminer::Score, bagel::PackedStorage)
 BAGEL_STORAGE(goldminer::UIComponent, bagel::PackedStorage)
 BAGEL_STORAGE(goldminer::Value, bagel::PackedStorage)
 BAGEL_STORAGE(goldminer::Weight, bagel::PackedStorage)
-BAGEL_STORAGE(goldminer::Mole, bagel::PackedStorage)
-BAGEL_STORAGE(goldminer::LifeTime, bagel::PackedStorage)
 BAGEL_STORAGE(goldminer::DestroyTag, bagel::PackedStorage)
 
 
@@ -27,9 +25,9 @@ BAGEL_STORAGE(goldminer::ItemType, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::GameTimer, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::PlayerInput, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::SoundEffect, bagel::SparseStorage)
-BAGEL_STORAGE(goldminer::Health, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::PhysicsBody, bagel::SparseStorage)
 BAGEL_STORAGE(goldminer::GrabbedJoint, bagel::SparseStorage)
+BAGEL_STORAGE(goldminer::LevelInfo, bagel::SparseStorage)
 
 // Tagged
 BAGEL_STORAGE(goldminer::Collectable, bagel::TaggedStorage)

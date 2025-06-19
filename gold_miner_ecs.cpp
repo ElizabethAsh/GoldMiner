@@ -57,8 +57,8 @@ namespace goldminer {
         Entity e = Entity::create();
 
         // Calculate position based on screen half (each half is 640px wide)
-        float startX = (playerID == 1) ? 220.0f : 860.0f; // Center of blue arch
-        float startY = 10.0f;
+        float startX = (playerID == 1) ? 310.0f : 785.0f; // Center of blue arch
+        float startY = 45.0f;
 
         e.addAll(
             Position{startX, startY},
@@ -1652,6 +1652,23 @@ namespace goldminer {
     //----------------------------------
 
     void LoadLayout1() {
+        // Mark previous layout entities for destruction
+        for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
+            bagel::ent_type ent{i};
+            if (bagel::World::mask(ent).test(bagel::Component<LevelInfo>::Bit) ||
+                bagel::World::mask(ent).test(bagel::Component<ItemType>::Bit)) {
+                bagel::World::addComponent<DestroyTag>(ent, {});
+            }
+        }
+
+        // Apply destruction
+        DestructionSystem();
+
+        // Set background for this layout
+        bagel::Entity layoutEntity = bagel::Entity::create();
+        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL1});
+
+
         goldminer::CreateGold(100.0f, 500.0f);
         goldminer::CreateDiamond(500.0f, 520.0f);
         goldminer::CreateDiamond(650.0f, 400.0f);
@@ -1662,6 +1679,23 @@ namespace goldminer {
     }
 
     void LoadLayout2() {
+        // Mark previous layout entities for destruction
+        for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
+            bagel::ent_type ent{i};
+            if (bagel::World::mask(ent).test(bagel::Component<LevelInfo>::Bit) ||
+                bagel::World::mask(ent).test(bagel::Component<ItemType>::Bit)) {
+                bagel::World::addComponent<DestroyTag>(ent, {});
+            }
+        }
+
+        // Apply destruction
+        DestructionSystem();
+
+        // Set background for this layout
+        bagel::Entity layoutEntity = bagel::Entity::create();
+        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL2});
+
+
         goldminer::CreateDiamond(100.0f, 500.0f);
         goldminer::CreateRock(500.0f, 520.0f);
         goldminer::CreateTreasureChest(650.0f, 400.0f);
@@ -1669,10 +1703,25 @@ namespace goldminer {
         goldminer::CreateGold(300.0f, 300.0f);
         goldminer::CreateRock(1000.0f, 300.0f);
         goldminer::CreateTreasureChest(300.0f, 400.0f);
-
     }
 
     void LoadLayout3() {
+        // Mark previous layout entities for destruction
+        for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
+            bagel::ent_type ent{i};
+            if (bagel::World::mask(ent).test(bagel::Component<LevelInfo>::Bit) ||
+                bagel::World::mask(ent).test(bagel::Component<ItemType>::Bit)) {
+                bagel::World::addComponent<DestroyTag>(ent, {});
+            }
+        }
+
+        // Apply destruction
+        DestructionSystem();
+
+        // Set background for this layout
+        bagel::Entity layoutEntity = bagel::Entity::create();
+        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL3});
+
         goldminer::CreateGold(150.0f, 500.0f);
         goldminer::CreateRock(300.0f, 520.0f);
         goldminer::CreateDiamond(750.0f, 540.0f);
@@ -1682,7 +1731,6 @@ namespace goldminer {
         goldminer::CreateRock(200.0f, 400.0f);
         goldminer::CreateTreasureChest(500.0f, 550.0f);
         goldminer::CreateDiamond(600.0f, 300.0f);
-
     }
 
 
