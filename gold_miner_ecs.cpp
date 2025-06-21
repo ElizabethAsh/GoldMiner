@@ -646,6 +646,7 @@ namespace goldminer {
         ropeMask.set(Component<PlayerInfo>::Bit);
 
         Mask playerMask;
+        playerMask.set(Component<PlayerTag>::Bit);
         playerMask.set(Component<Position>::Bit);
         playerMask.set(Component<PlayerInfo>::Bit);
 
@@ -799,6 +800,7 @@ namespace goldminer {
             Mask playerMask;
             playerMask.set(Component<Position>::Bit);
             playerMask.set(Component<PlayerInfo>::Bit);
+            playerMask.set(Component<PlayerTag>::Bit);
             ent_type playerEntity = {};
             for (id_type pid = 0; pid <= World::maxId().id; ++pid) {
                 ent_type player{pid};
@@ -1120,6 +1122,7 @@ namespace goldminer {
         Mask playerMask;
         playerMask.set(Component<Position>::Bit);
         playerMask.set(Component<PlayerInfo>::Bit);
+        playerMask.set(Component<PlayerTag>::Bit);
 
         for (bagel::id_type id = 0; id <= bagel::World::maxId().id; ++id) {
             bagel::ent_type ent{id};

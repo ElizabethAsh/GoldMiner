@@ -188,14 +188,6 @@ namespace goldminer
     id_type CreateTreasureChest(float x, float y);
     id_type CreateUIEntity(int playerID);
 
-    //----------------------------------
-    /// @section Game's Layout
-    //----------------------------------
-
-    void LoadLayout1();
-    void LoadLayout2();
-    void LoadLayout3();
-
 } // namespace goldminer
 
 

@@ -36,6 +36,8 @@ std::array<SpriteID, 5> availableSprites = {
 bool p1Confirmed = false;
 bool p2Confirmed = false;
 
+static goldminer::GameManager manager;
+
 int main() {
     std::cout << "Starting Gold Miner ECS...\n";
 
@@ -95,7 +97,6 @@ int main() {
                         player1Sprite = availableSprites[selectionP1];
                         player2Sprite = availableSprites[selectionP2];
 
-                        static goldminer::GameManager manager;
                         manager.StartFullGame(player1Sprite, player2Sprite, 30.0f);
 
                         gameState = GameState::Playing;

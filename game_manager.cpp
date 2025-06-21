@@ -60,20 +60,17 @@ namespace goldminer {
 
     void GameManager::StartNextLevel(float timePerPlayer) {
         if (currentLevel >= totalLevels) return;
-
-        MarkAllItemsForDestruction();
-        DestructionSystem();
-        ResetGameState(timePerPlayer);
+        if (currentLevel != 0) {
+            MarkAllItemsForDestruction();
+            DestructionSystem();
+            ResetGameState(timePerPlayer);
+        }
 
         switch (currentLevel) {
             case 0: LoadLayout1(); break;
             case 1: LoadLayout2(); break;
             case 2: LoadLayout3(); break;
         }
-
-        bagel::Entity e = bagel::Entity::create();
-        SpriteID bgID = static_cast<SpriteID>(SPRITE_BACKGROUND_LEVEL1 + currentLevel);
-        e.add(LevelInfo{bgID});
 
         currentLevel++;
     }
@@ -115,6 +112,10 @@ namespace goldminer {
 
 
     void GameManager::LoadLayout1() {
+        // Set background for this layout
+        bagel::Entity layoutEntity = bagel::Entity::create();
+        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL1});
+
         CreateGold(100.0f, 500.0f);
         CreateDiamond(500.0f, 520.0f);
         CreateDiamond(650.0f, 400.0f);
@@ -125,6 +126,10 @@ namespace goldminer {
     }
 
     void GameManager::LoadLayout2() {
+        // Set background for this layout
+        bagel::Entity layoutEntity = bagel::Entity::create();
+        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL2});
+
         CreateDiamond(100.0f, 500.0f);
         CreateRock(500.0f, 520.0f);
         CreateTreasureChest(650.0f, 400.0f);
@@ -135,6 +140,10 @@ namespace goldminer {
     }
 
     void GameManager::LoadLayout3() {
+        // Set background for this layout
+        bagel::Entity layoutEntity = bagel::Entity::create();
+        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL3});
+
         CreateGold(150.0f, 500.0f);
         CreateRock(300.0f, 520.0f);
         CreateDiamond(750.0f, 540.0f);
