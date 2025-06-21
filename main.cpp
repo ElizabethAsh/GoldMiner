@@ -5,7 +5,7 @@
 #include "gold_miner_ecs.h"
 #include "sprite_manager.h"
 #include "bagel.h"
-
+#include "game_manager.h"
 #include <iostream>
 #include <array>
 
@@ -95,20 +95,8 @@ int main() {
                         player1Sprite = availableSprites[selectionP1];
                         player2Sprite = availableSprites[selectionP2];
 
-                        goldminer::CreatePlayer(1, player1Sprite, 15);
-                        goldminer::CreatePlayer(2, player2Sprite, 15);
-                        goldminer::CreateRope(1);
-                        goldminer::CreateRope(2);
-
-                        int layout = rand() % 3;
-                        switch (layout) {
-                            case 0: goldminer::LoadLayout1(); break;
-                            case 1: goldminer::LoadLayout2(); break;
-                            case 2: goldminer::LoadLayout3(); break;
-                        }
-
-                        goldminer::CreateUIEntity(1);
-                        goldminer::CreateUIEntity(2);
+                        static goldminer::GameManager manager;
+                        manager.StartFullGame(player1Sprite, player2Sprite, 30.0f);
 
                         gameState = GameState::Playing;
                     }

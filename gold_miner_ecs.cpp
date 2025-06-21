@@ -67,7 +67,8 @@ namespace goldminer {
             PlayerInfo{playerID},
             Score{0},
             GameTimer{time},
-            PlayerInput{}
+            PlayerInput{},
+            PlayerTag{}
         );
 
         return e.entity().id;
@@ -109,6 +110,7 @@ namespace goldminer {
         Mask playerMask;
         playerMask.set(Component<Position>::Bit);
         playerMask.set(Component<PlayerInfo>::Bit);
+        playerMask.set(Component<PlayerTag>::Bit);
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
             ent_type ent{id};
@@ -1639,92 +1641,4 @@ void CheckForGameOverSystem() {
         ent_type item{grabbed.attachedEntityId};
         World::addComponent<DestroyTag>(item, {});
     }
-
-    //----------------------------------
-    /// @section Game's Layout
-    //----------------------------------
-
-    void LoadLayout1() {
-        // Mark previous layout entities for destruction
-        for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
-            bagel::ent_type ent{i};
-            if (bagel::World::mask(ent).test(bagel::Component<LevelInfo>::Bit) ||
-                bagel::World::mask(ent).test(bagel::Component<ItemType>::Bit)) {
-                bagel::World::addComponent<DestroyTag>(ent, {});
-            }
-        }
-
-        // Apply destruction
-        DestructionSystem();
-
-        // Set background for this layout
-        bagel::Entity layoutEntity = bagel::Entity::create();
-        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL1});
-
-
-        goldminer::CreateGold(100.0f, 500.0f);
-        goldminer::CreateDiamond(500.0f, 520.0f);
-        goldminer::CreateDiamond(650.0f, 400.0f);
-        goldminer::CreateRock(900.0f, 530.0f);
-        goldminer::CreateGold(1000.0f, 350.0f);
-        goldminer::CreateTreasureChest(300.0f, 510.0f);
-        goldminer::CreateGold(300.0f, 350.0f);
-    }
-
-    void LoadLayout2() {
-        // Mark previous layout entities for destruction
-        for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
-            bagel::ent_type ent{i};
-            if (bagel::World::mask(ent).test(bagel::Component<LevelInfo>::Bit) ||
-                bagel::World::mask(ent).test(bagel::Component<ItemType>::Bit)) {
-                bagel::World::addComponent<DestroyTag>(ent, {});
-            }
-        }
-
-        // Apply destruction
-        DestructionSystem();
-
-        // Set background for this layout
-        bagel::Entity layoutEntity = bagel::Entity::create();
-        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL2});
-
-
-        goldminer::CreateDiamond(100.0f, 500.0f);
-        goldminer::CreateRock(500.0f, 520.0f);
-        goldminer::CreateTreasureChest(650.0f, 400.0f);
-        goldminer::CreateGold(900.0f, 530.0f);
-        goldminer::CreateGold(300.0f, 350.0f);
-        goldminer::CreateRock(1000.0f, 350.0f);
-        goldminer::CreateTreasureChest(300.0f, 400.0f);
-    }
-
-    void LoadLayout3() {
-        // Mark previous layout entities for destruction
-        for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
-            bagel::ent_type ent{i};
-            if (bagel::World::mask(ent).test(bagel::Component<LevelInfo>::Bit) ||
-                bagel::World::mask(ent).test(bagel::Component<ItemType>::Bit)) {
-                bagel::World::addComponent<DestroyTag>(ent, {});
-            }
-        }
-
-        // Apply destruction
-        DestructionSystem();
-
-        // Set background for this layout
-        bagel::Entity layoutEntity = bagel::Entity::create();
-        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL3});
-
-        goldminer::CreateGold(150.0f, 500.0f);
-        goldminer::CreateRock(300.0f, 520.0f);
-        goldminer::CreateDiamond(750.0f, 540.0f);
-        goldminer::CreateTreasureChest(1000.0f, 550.0f);
-        goldminer::CreateGold(300.0f, 350.0f);
-        goldminer::CreateGold(1000.0f, 350.0f);
-        goldminer::CreateRock(200.0f, 400.0f);
-        goldminer::CreateTreasureChest(500.0f, 550.0f);
-        goldminer::CreateDiamond(600.0f, 350.0f);
-    }
-
-
 } // namespace goldminer
