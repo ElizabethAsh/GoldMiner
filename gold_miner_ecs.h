@@ -150,7 +150,6 @@ namespace goldminer
     struct GameOverTag {};
     struct Collidable {};
     struct DestroyTag {};
-    struct PlayerTag {};
 
 //----------------------------------
 /// @section System Declarations

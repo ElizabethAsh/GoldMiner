@@ -5,7 +5,7 @@
 #include "gold_miner_ecs.h"
 #include "sprite_manager.h"
 #include "bagel.h"
-#include "game_manager.h"
+
 #include <iostream>
 #include <array>
 
@@ -15,15 +15,11 @@ const int SCREEN_HEIGHT = 720;
 enum class GameState {
     MainMenu,
     CharacterSelect,
+    BackgroundSelect,
     Playing,
     GameOver
 };
 
-SpriteID player1Sprite = SPRITE_PLAYER_IDLE;
-SpriteID player2Sprite = SPRITE_PLAYER_IDLE;
-
-int selectionP1 = 0;
-int selectionP2 = 0;
 
 std::array<SpriteID, 5> availableSprites = {
     SPRITE_PLAYER_IDLE,
@@ -33,8 +29,22 @@ std::array<SpriteID, 5> availableSprites = {
     SPRITE_PLAYER_ELIZABETH
 };
 
+SpriteID player1Sprite = SPRITE_PLAYER_IDLE;
+SpriteID player2Sprite = SPRITE_PLAYER_IDLE;
+int selectionP1 = 0;
+int selectionP2 = 0;
 bool p1Confirmed = false;
 bool p2Confirmed = false;
+
+std::array<SpriteID, 3> availableBackgrounds = {
+    SPRITE_BACKGROUND_LEVEL1,
+    SPRITE_BACKGROUND_LEVEL2,
+    SPRITE_BACKGROUND_LEVEL3
+};
+
+int selectionBG = 0;
+SpriteID currentBackground = SPRITE_BACKGROUND_LEVEL1;
+bool bgConfirmed = false;
 
 int main() {
     std::cout << "Starting Gold Miner ECS...\n";
@@ -94,11 +104,35 @@ int main() {
                     if (p1Confirmed && p2Confirmed) {
                         player1Sprite = availableSprites[selectionP1];
                         player2Sprite = availableSprites[selectionP2];
-
-                        static goldminer::GameManager manager;
-                        manager.StartFullGame(player1Sprite, player2Sprite, 30.0f);
-
-                        gameState = GameState::Playing;
+                        // Move to background selection instead of Playing
+                        selectionBG = 0;
+                        bgConfirmed = false;
+                        gameState = GameState::BackgroundSelect;
+                    }
+                }
+                else if (gameState == GameState::BackgroundSelect) {
+                    if (!bgConfirmed) {
+                        if (key == SDLK_LEFT) selectionBG = (selectionBG + availableBackgrounds.size() - 1) % availableBackgrounds.size();
+                        else if (key == SDLK_RIGHT) selectionBG = (selectionBG + 1) % availableBackgrounds.size();
+                        else if (key == SDLK_RETURN) {
+                            bgConfirmed = true;
+                            currentBackground = availableBackgrounds[selectionBG];
+                            // Now create players, ropes, layout, UI, and start Playing
+                            goldminer::CreatePlayer(1, player1Sprite, 15);
+                            goldminer::CreatePlayer(2, player2Sprite, 15);
+                            goldminer::CreateRope(1);
+                            goldminer::CreateRope(2);
+                            // Use selected background for layout
+                            int layout = selectionBG;
+                            switch (layout) {
+                                case 0: goldminer::LoadLayout1(); break;
+                                case 1: goldminer::LoadLayout2(); break;
+                                case 2: goldminer::LoadLayout3(); break;
+                            }
+                            goldminer::CreateUIEntity(1);
+                            goldminer::CreateUIEntity(2);
+                            gameState = GameState::Playing;
+                        }
                     }
                 }
                 else if (gameState == GameState::Playing && key == SDLK_ESCAPE) {
@@ -135,6 +169,17 @@ int main() {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                 SDL_RenderRect(renderer, &dst2);
             }
+        }
+        else if (gameState == GameState::BackgroundSelect) {
+            // Show background preview and selection UI
+            SDL_FRect bgRect = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
+            SpriteID bgID = availableBackgrounds[selectionBG];
+            SDL_RenderTexture(renderer, GetSpriteTexture(bgID), nullptr, &bgRect);
+            // Draw a yellow border to indicate selection
+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+            SDL_RenderRect(renderer, &bgRect);
+            // Optionally, show instructions
+            // (You can add text rendering here if you have a font system)
         }
         else if (gameState == GameState::Playing) {
             SDL_FRect bg1 = {0, 0, 1280, 720};
