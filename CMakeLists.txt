@@ -21,8 +21,7 @@ add_executable(BAGEL
         gold_miner_ecs.h
         sprite_manager.cpp
         sprite_manager.h
-        debug_draw.cpp debug_draw.h
-        game_manager.cpp game_manager.h)
+        debug_draw.cpp debug_draw.h)
 
 add_subdirectory(lib/SDL)
 target_link_libraries(BAGEL PUBLIC SDL3-static)
