@@ -153,13 +153,18 @@ int main() {
             SDL_RenderTexture(renderer, menuTexture, nullptr, &dstRect);
         }
         else if (gameState == GameState::CharacterSelect) {
-            SDL_FRect dst1 = {SCREEN_WIDTH / 4 - 82, 200, 164, 169};
-            SDL_FRect dst2 = {3 * SCREEN_WIDTH / 4 - 82, 200, 164, 169};
-
-            SpriteID p1 = availableSprites[selectionP1];
-            SpriteID p2 = availableSprites[selectionP2];
+            // Draw title image at the top
+            SDL_FRect titleDst = {
+                (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
+                20.0f,                             // top margin
+                700.0f,                            // width
+                300.0f                             // height
+            };
+            SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_CHOOSE_PLAYER_TITLE), nullptr, &titleDst);
 
             // Player 1
+            SDL_FRect dst1 = {SCREEN_WIDTH / 4 - 82, 350, 164, 169};
+            SpriteID p1 = availableSprites[selectionP1];
             SDL_FRect src1;
             SDL_FRect* srcPtr1 = nullptr;
             if (p1 == SPRITE_PLAYER_IDLE) {
@@ -175,6 +180,8 @@ int main() {
             SDL_RenderTexture(renderer, GetSpriteTexture(p1), srcPtr1, &dst1);
 
             // Player 2
+            SDL_FRect dst2 = {3 * SCREEN_WIDTH / 4 - 82, 350, 164, 169};
+            SpriteID p2 = availableSprites[selectionP2];
             SDL_FRect src2;
             SDL_FRect* srcPtr2 = nullptr;
             if (p2 == SPRITE_PLAYER_IDLE) {
@@ -189,7 +196,7 @@ int main() {
             }
             SDL_RenderTexture(renderer, GetSpriteTexture(p2), srcPtr2, &dst2);
 
-            // Highlight selected player
+            // Highlight selection
             if (!p1Confirmed) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                 SDL_RenderRect(renderer, &dst1);
@@ -198,6 +205,7 @@ int main() {
                 SDL_RenderRect(renderer, &dst2);
             }
         }
+
 
         else if (gameState == GameState::BackgroundSelect) {
             // Show background preview and selection UI
