@@ -95,8 +95,8 @@ int main() {
                         player1Sprite = availableSprites[selectionP1];
                         player2Sprite = availableSprites[selectionP2];
 
-                        goldminer::CreatePlayer(1, player1Sprite);
-                        goldminer::CreatePlayer(2, player2Sprite);
+                        goldminer::CreatePlayer(1, player1Sprite, 15);
+                        goldminer::CreatePlayer(2, player2Sprite, 15);
                         goldminer::CreateRope(1);
                         goldminer::CreateRope(2);
 
@@ -109,18 +109,6 @@ int main() {
 
                         goldminer::CreateUIEntity(1);
                         goldminer::CreateUIEntity(2);
-
-                        bagel::Entity score1 = bagel::Entity::create();
-                        score1.addAll(goldminer::Score{0}, goldminer::PlayerInfo{1});
-
-                        bagel::Entity score2 = bagel::Entity::create();
-                        score2.addAll(goldminer::Score{0}, goldminer::PlayerInfo{2});
-
-                        bagel::Entity timer1 = bagel::Entity::create();
-                        timer1.addAll(goldminer::GameTimer{30.0f}, goldminer::PlayerInfo{1});
-
-                        bagel::Entity timer2 = bagel::Entity::create();
-                        timer2.addAll(goldminer::GameTimer{30.0f}, goldminer::PlayerInfo{2});
 
                         gameState = GameState::Playing;
                     }

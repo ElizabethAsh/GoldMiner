@@ -53,7 +53,7 @@ namespace goldminer {
     * @param sprite The sprite to use for this player.
     * @return The ID of the created entity.
     */
-    id_type CreatePlayer(int playerID, SpriteID sprite) {
+    id_type CreatePlayer(int playerID, SpriteID sprite, float time) {
         Entity e = Entity::create();
 
         // Calculate position based on screen half (each half is 640px wide)
@@ -66,6 +66,7 @@ namespace goldminer {
             Renderable{sprite},
             PlayerInfo{playerID},
             Score{0},
+            GameTimer{time},
             PlayerInput{}
         );
 
@@ -338,7 +339,7 @@ namespace goldminer {
                 Renderable{SPRITE_ROCK},
                 Collectable{},
                 ItemType{ItemType::Type::Rock},
-                Value{100},
+                Value{30},
                 Weight{1.0f},
                 Collidable{},
                 PlayerInfo{-1},
@@ -420,7 +421,7 @@ namespace goldminer {
                 Renderable{SPRITE_DIAMOND},
                 Collectable{},
                 ItemType{ItemType::Type::Diamond},
-                Value{100},
+                Value{120},
                 Weight{1.0f},
                 Collidable{},
                 PlayerInfo{-1},
@@ -497,7 +498,7 @@ namespace goldminer {
         b2Body_SetUserData(bodyId, new bagel::ent_type{e.entity()});
 
         // Random value from predefined set
-        const int options[] = {10, 20, 50, 70, 100};
+        const int options[] = {120, 20, 50, 70, 100};
         int randomIndex = rand() % 5;
         int randomValue = options[randomIndex];
 
@@ -1459,93 +1460,82 @@ namespace goldminer {
     }
 
     /**
-     * @brief Determines if the game has ended and declares a winner or tie based on player scores.
-     *
-     * This system checks all `GameTimer` components to see if any players still have time left.
-     * If no players have remaining time, it:
-     * - Gathers all `Score` components
-     * - Identifies the player(s) with the highest score
-     * - Updates global game state flags (`game_over` and `player_id`) accordingly
-     * - Prints the result to the console (either a win or tie)
-     *
-     * Components involved:
-     * - `GameTimer`, `Score`, `PlayerInfo`
-     *
-     * Global state affected:
-     * - `game_over`: Set to `true` when the game ends
-     * - `player_id`: Set to winning player's ID or 0 in case of tie
-     *
-     * @note Assumes global variables `game_over` and `player_id` exist and are mutable.
-     */
-    void CheckForGameOverSystem() {
-        using namespace bagel;
-        using namespace goldminer;
+ * @brief Determines if the game has ended and declares a winner or tie based on player scores.
+ *
+ * This system checks all `GameTimer` components to see if any players still have time left.
+ * If no players have remaining time, it:
+ * - Gathers all `Score` components
+ * - Identifies the player(s) with the highest score
+ * - Updates global game state flags (`game_over` and `player_id`) accordingly
+ * - Prints the result to the console (either a win or tie)
+ *
+ * @note Assumes global variables `game_over` and `player_id` exist and are mutable.
+ */
+void CheckForGameOverSystem() {
 
-        Mask timerMask;
-        timerMask.set(Component<GameTimer>::Bit);
-        timerMask.set(Component<PlayerInfo>::Bit);
+    int playersWithTime = 0;
+    std::vector<std::pair<int, int>> playerScores; // {playerID, score}
 
-        Mask scoreMask;
-        scoreMask.set(Component<Score>::Bit);
-        scoreMask.set(Component<PlayerInfo>::Bit);
+    // Step 1: Check if any player has time left
+    for (id_type id = 0; id <= World::maxId().id; ++id) {
+        ent_type ent{id};
+        if (!World::mask(ent).test(Component<GameTimer>::Bit)) continue;
+        if (!World::mask(ent).test(Component<PlayerInfo>::Bit)) continue;
 
-        int playersWithTime = 0;
-        std::vector<std::pair<int, int>> playerScores; // {playerID, score}
+        const GameTimer& timer = World::getComponent<GameTimer>(ent);
+        if (timer.timeLeft > 0.0f)
+            playersWithTime++;
+    }
+
+    // Step 2: If all players have time == 0, determine the winner
+    if (playersWithTime == 0) {
+        std::cout << "[CheckForGameOver] All players' timers reached 0\n";
+        std::cout << "[CheckForGameOver] Gathering player scores:\n";
 
         for (id_type id = 0; id <= World::maxId().id; ++id) {
             ent_type ent{id};
-            if (!World::mask(ent).test(timerMask)) continue;
+            if (!World::mask(ent).test(Component<Score>::Bit)) continue;
+            if (!World::mask(ent).test(Component<PlayerInfo>::Bit)) continue;
+            if (!World::mask(ent).test((Component<GameTimer>::Bit)))continue;
 
-            const GameTimer& timer = World::getComponent<GameTimer>(ent);
+            const Score& score = World::getComponent<Score>(ent);
             const PlayerInfo& player = World::getComponent<PlayerInfo>(ent);
 
-            if (timer.timeLeft > 0.0f)
-                playersWithTime++;
+
+            playerScores.emplace_back(player.playerID, score.points);
         }
 
-        // If all players have time == 0
-        if (playersWithTime == 0) {
-            // Find winner
-            for (id_type id = 0; id <= World::maxId().id; ++id) {
-                ent_type ent{id};
-                if (!World::mask(ent).test(scoreMask)) continue;
+        if (!playerScores.empty()) {
+            auto maxScoreIt = std::max_element(
+                playerScores.begin(), playerScores.end(),
+                [](const auto& a, const auto& b) {
+                    return a.second < b.second;
+                });
 
-                const Score& score = World::getComponent<Score>(ent);
-                const PlayerInfo& player = World::getComponent<PlayerInfo>(ent);
+            int maxScore = maxScoreIt->second;
+            std::vector<int> winners;
 
-                playerScores.emplace_back(player.playerID, score.points);
-            }
-
-            if (!playerScores.empty()) {
-                auto maxScoreIt = std::max_element(
-                    playerScores.begin(), playerScores.end(),
-                    [](const auto& a, const auto& b) {
-                        return a.second < b.second;
-                    });
-
-                int maxScore = maxScoreIt->second;
-                std::vector<int> winners;
-
-                for (const auto& p : playerScores) {
-                    if (p.second == maxScore) {
-                        winners.push_back(p.first);
-                    }
-                }
-
-                if (winners.size() == 1) {
-                    player_id = winners[0];
-                    game_over = true;
-                    std::cout << "\nGAME OVER! Winner is Player " << winners[0]
-                              << " with " << maxScore << " points!\n";
-                } else {
-                    player_id = 0;
-                    game_over = true;
-                    std::cout << "\nGAME OVER! It's a tie between players with " << maxScore << " points!\n";
+            for (const auto& p : playerScores) {
+                if (p.second == maxScore) {
+                    winners.push_back(p.first);
                 }
             }
 
+            if (winners.size() == 1) {
+                player_id = winners[0];
+                game_over = true;
+                std::cout << "\nGAME OVER! Winner is Player " << winners[0]
+                          << " with " << maxScore << " points!\n";
+            } else {
+                player_id = 0;
+                game_over = true;
+                std::cout << "\nGAME OVER! It's a tie between players with "
+                          << maxScore << " points!\n";
+            }
         }
     }
+}
+
 
     //----------------------------------
     /// @section Helper Implementations
@@ -1676,9 +1666,9 @@ namespace goldminer {
         goldminer::CreateDiamond(500.0f, 520.0f);
         goldminer::CreateDiamond(650.0f, 400.0f);
         goldminer::CreateRock(900.0f, 530.0f);
-        goldminer::CreateGold(1000.0f, 300.0f);
+        goldminer::CreateGold(1000.0f, 350.0f);
         goldminer::CreateTreasureChest(300.0f, 510.0f);
-        goldminer::CreateGold(300.0f, 300.0f);
+        goldminer::CreateGold(300.0f, 350.0f);
     }
 
     void LoadLayout2() {
@@ -1703,8 +1693,8 @@ namespace goldminer {
         goldminer::CreateRock(500.0f, 520.0f);
         goldminer::CreateTreasureChest(650.0f, 400.0f);
         goldminer::CreateGold(900.0f, 530.0f);
-        goldminer::CreateGold(300.0f, 300.0f);
-        goldminer::CreateRock(1000.0f, 300.0f);
+        goldminer::CreateGold(300.0f, 350.0f);
+        goldminer::CreateRock(1000.0f, 350.0f);
         goldminer::CreateTreasureChest(300.0f, 400.0f);
     }
 
@@ -1729,11 +1719,11 @@ namespace goldminer {
         goldminer::CreateRock(300.0f, 520.0f);
         goldminer::CreateDiamond(750.0f, 540.0f);
         goldminer::CreateTreasureChest(1000.0f, 550.0f);
-        goldminer::CreateGold(300.0f, 300.0f);
-        goldminer::CreateGold(1000.0f, 300.0f);
+        goldminer::CreateGold(300.0f, 350.0f);
+        goldminer::CreateGold(1000.0f, 350.0f);
         goldminer::CreateRock(200.0f, 400.0f);
         goldminer::CreateTreasureChest(500.0f, 550.0f);
-        goldminer::CreateDiamond(600.0f, 300.0f);
+        goldminer::CreateDiamond(600.0f, 350.0f);
     }
 
 
