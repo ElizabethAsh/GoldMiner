@@ -55,12 +55,16 @@ void LoadCharacterSprites(SDL_Renderer* renderer) {
     gTextures[SPRITE_PLAYER_OFEK]      = LoadTexture(renderer, "res/Player_Ofek.png");
     gTextures[SPRITE_PLAYER_NOA]       = LoadTexture(renderer, "res/Player_Noa.png");
     gTextures[SPRITE_PLAYER_ELIZABETH] = LoadTexture(renderer, "res/Player_Elizabeth11.png");
+    gTextures[SPRITE_PLAYER_ASTRONAUT_AMAL] = LoadTexture(renderer, "res/Player_Amal_Astronaut_1024.png");
+    gTextures[SPRITE_PLAYER_ASTRONAUT_OFEK] = LoadTexture(renderer, "res/Player_Ofek_Astronaut_1024.png");
 
     gSrcRects[SPRITE_PLAYER_IDLE] = {0, 7, 164, 169};
     gSrcRects[SPRITE_PLAYER_AMAL]      = {0, 0, 1000, 1001};
     gSrcRects[SPRITE_PLAYER_OFEK]      = {0, 0, 1000, 1001};
     gSrcRects[SPRITE_PLAYER_NOA]       = {0, 0, 1000, 1001};
     gSrcRects[SPRITE_PLAYER_ELIZABETH] = {0, 0, 1000, 1001};
+    gSrcRects[SPRITE_PLAYER_ASTRONAUT_AMAL] = {0, 0, 1000, 1001};
+    gSrcRects[SPRITE_PLAYER_ASTRONAUT_OFEK] = {0, 0, 1000, 1001};
 }
 
 void LoadBackgroundSprites(SDL_Renderer* renderer) {
