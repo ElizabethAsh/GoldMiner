@@ -1074,7 +1074,8 @@ namespace goldminer {
                 scale = 164.0f / 1000.0f; // match width to old size (~0.164)
             }
             if (render.spriteID == SPRITE_PLAYER_ELIZABETH || render.spriteID == SPRITE_PLAYER_OFEK ||
-                render.spriteID == SPRITE_PLAYER_ASTRONAUT_OFEK || render.spriteID == SPRITE_PLAYER_ASTRONAUT_AMAL) {
+                render.spriteID == SPRITE_PLAYER_ASTRONAUT_OFEK || render.spriteID == SPRITE_PLAYER_ASTRONAUT_AMAL
+                || render.spriteID == SPRITE_PLAYER_COWGIRL || render.spriteID == SPRITE_PLAYER_COWBOY) {
                 scale = 164.0f / 900.0f;
             }
 
