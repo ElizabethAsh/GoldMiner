@@ -21,14 +21,16 @@ enum class GameState {
 };
 
 
-std::array<SpriteID, 7> availableSprites = {
+std::array<SpriteID, 9> availableSprites = {
     SPRITE_PLAYER_IDLE,
     SPRITE_PLAYER_AMAL,
     SPRITE_PLAYER_OFEK,
     SPRITE_PLAYER_NOA,
     SPRITE_PLAYER_ELIZABETH,
     SPRITE_PLAYER_ASTRONAUT_AMAL,
-    SPRITE_PLAYER_ASTRONAUT_OFEK
+    SPRITE_PLAYER_ASTRONAUT_OFEK,
+    SPRITE_PLAYER_COWBOY,
+    SPRITE_PLAYER_COWGIRL
 };
 
 SpriteID player1Sprite = SPRITE_PLAYER_IDLE;
