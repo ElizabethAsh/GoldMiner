@@ -9,6 +9,10 @@ void UnloadAllSprites();
 SDL_Texture* GetSpriteTexture(SpriteID id);
 SDL_Rect GetSpriteSrcRect(SpriteID id);
 void LoadDigitSprite(SDL_Renderer* renderer);
+void LoadCharacterSprites(SDL_Renderer* renderer);
+void LoadBackgroundSprites(SDL_Renderer* renderer);
+void LoadCollectableSprites(SDL_Renderer* renderer);
+void LoadTitleSprites(SDL_Renderer* renderer);
 
 #endif // SPRITE_MANAGER_H
 

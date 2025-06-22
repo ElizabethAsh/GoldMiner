@@ -153,15 +153,50 @@ int main() {
             SDL_RenderTexture(renderer, menuTexture, nullptr, &dstRect);
         }
         else if (gameState == GameState::CharacterSelect) {
-            SDL_FRect dst1 = {SCREEN_WIDTH / 4 - 82, 200, 164, 169};
-            SDL_FRect dst2 = {3 * SCREEN_WIDTH / 4 - 82, 200, 164, 169};
+            // Draw title image at the top
+            SDL_FRect titleDst = {
+                (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
+                120.0f,                            // top margin - הורדנו מ-20 ל-120
+                700.0f,                            // width
+                300.0f                             // height
+            };
+            SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_CHOOSE_PLAYER_TITLE), nullptr, &titleDst);
 
+            // Player 1
+            SDL_FRect dst1 = {SCREEN_WIDTH / 4 - 82, 350, 164, 169};
             SpriteID p1 = availableSprites[selectionP1];
+            SDL_FRect src1;
+            SDL_FRect* srcPtr1 = nullptr;
+            if (p1 == SPRITE_PLAYER_IDLE) {
+                SDL_Rect intRect = GetSpriteSrcRect(p1);
+                src1 = {
+                    static_cast<float>(intRect.x),
+                    static_cast<float>(intRect.y),
+                    static_cast<float>(intRect.w),
+                    static_cast<float>(intRect.h)
+                };
+                srcPtr1 = &src1;
+            }
+            SDL_RenderTexture(renderer, GetSpriteTexture(p1), srcPtr1, &dst1);
+
+            // Player 2
+            SDL_FRect dst2 = {3 * SCREEN_WIDTH / 4 - 82, 350, 164, 169};
             SpriteID p2 = availableSprites[selectionP2];
+            SDL_FRect src2;
+            SDL_FRect* srcPtr2 = nullptr;
+            if (p2 == SPRITE_PLAYER_IDLE) {
+                SDL_Rect intRect = GetSpriteSrcRect(p2);
+                src2 = {
+                    static_cast<float>(intRect.x),
+                    static_cast<float>(intRect.y),
+                    static_cast<float>(intRect.w),
+                    static_cast<float>(intRect.h)
+                };
+                srcPtr2 = &src2;
+            }
+            SDL_RenderTexture(renderer, GetSpriteTexture(p2), srcPtr2, &dst2);
 
-            SDL_RenderTexture(renderer, GetSpriteTexture(p1), nullptr, &dst1);
-            SDL_RenderTexture(renderer, GetSpriteTexture(p2), nullptr, &dst2);
-
+            // Highlight selection
             if (!p1Confirmed) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                 SDL_RenderRect(renderer, &dst1);
@@ -171,15 +206,23 @@ int main() {
             }
         }
         else if (gameState == GameState::BackgroundSelect) {
-            // Show background preview and selection UI
+
             SDL_FRect bgRect = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SpriteID bgID = availableBackgrounds[selectionBG];
             SDL_RenderTexture(renderer, GetSpriteTexture(bgID), nullptr, &bgRect);
-            // Draw a yellow border to indicate selection
+            
+            SDL_FRect titleDst = {
+                (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
+                320.0f,
+                700.0f,
+                300.0f
+            };
+            
+            SDL_Texture* titleTexture = GetSpriteTexture(SPRITE_CHOOSE_BACKGROUND_TITLE);
+            SDL_RenderTexture(renderer, titleTexture, nullptr, &titleDst);
+            // Draw border last
             SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
             SDL_RenderRect(renderer, &bgRect);
-            // Optionally, show instructions
-            // (You can add text rendering here if you have a font system)
         }
         else if (gameState == GameState::Playing) {
             SDL_FRect bg1 = {0, 0, 1280, 720};
