@@ -1043,9 +1043,6 @@ namespace goldminer {
  * @brief Renders all entities with a position and sprite.
  */
     void RenderSystem(SDL_Renderer* renderer) {
-        using namespace bagel;
-        using namespace goldminer;
-
         Mask mask;
         mask.set(Component<Renderable>::Bit);
         mask.set(Component<Position>::Bit);

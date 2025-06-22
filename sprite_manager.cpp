@@ -15,44 +15,12 @@ SDL_Texture* LoadTexture(SDL_Renderer* renderer, const char* path) {
 }
 
 void LoadAllSprites(SDL_Renderer* renderer) {
-    gTextures[SPRITE_GOLD] = LoadTexture(renderer, "res/gold.png");
-    gTextures[SPRITE_ROCK] = LoadTexture(renderer, "res/rock.png");
-    gTextures[SPRITE_DIAMOND] = LoadTexture(renderer, "res/diamond.png");
-    gTextures[SPRITE_BOMB] = LoadTexture(renderer, "res/bom.png");
-    gTextures[SPRITE_PLAYER_IDLE] = LoadTexture(renderer, "res/player.png");
-//    gTextures[SPRITE_BACKGROUND] = LoadTexture(renderer, "res/background.png");
-    gTextures[SPRITE_BACKGROUND_LEVEL1] = LoadTexture(renderer, "res/background_level1.png");
-    gTextures[SPRITE_BACKGROUND_LEVEL2] = LoadTexture(renderer, "res/background_level2.png");
-    gTextures[SPRITE_BACKGROUND_LEVEL3] = LoadTexture(renderer, "res/background_level3.png");
-    gTextures[SPRITE_TREASURE_CHEST] = LoadTexture(renderer, "res/treasureChest.png");
-    gTextures[SPRITE_TITLE_MONEY] = LoadTexture(renderer, "res/titleMoney.png");
-    gTextures[SPRITE_TITLE_TIME]  = LoadTexture(renderer, "res/titleTime.png");
-    gTextures[SPRITE_PLAYER_AMAL]      = LoadTexture(renderer, "res/Player_Amal.png");
-    gTextures[SPRITE_PLAYER_OFEK]      = LoadTexture(renderer, "res/Player_Ofek.png");
-    gTextures[SPRITE_PLAYER_NOA]       = LoadTexture(renderer, "res/Player_Noa.png");
-    gTextures[SPRITE_PLAYER_ELIZABETH] = LoadTexture(renderer, "res/Player_Elizabeth11.png");
-
-    gSrcRects[SPRITE_GOLD] = {0, 0, 35, 30};
-    gSrcRects[SPRITE_ROCK] = {0, 0, 77, 87};
-    gSrcRects[SPRITE_DIAMOND] = {0, 0, 41, 32};
-    gSrcRects[SPRITE_BOMB] = {0, 0, 77, 67};
-    gSrcRects[SPRITE_PLAYER_IDLE] = {0, 7, 164, 169};
-//    gSrcRects[SPRITE_BACKGROUND] = {0, 0, 1280, 720};
-    gSrcRects[SPRITE_BACKGROUND_LEVEL1] = {0, 0, 1280, 720};
-    gSrcRects[SPRITE_BACKGROUND_LEVEL2] = {0, 0, 1280, 720};
-    gSrcRects[SPRITE_BACKGROUND_LEVEL3] = {0, 0, 1280, 720};
-    gSrcRects[SPRITE_TREASURE_CHEST] = {33, 50, 88, 82};
-    gSrcRects[SPRITE_TITLE_MONEY] = {0, 0, 112, 32};
-    gSrcRects[SPRITE_TITLE_TIME]  = {0, 0, 83, 25};
-    gSrcRects[SPRITE_PLAYER_AMAL]      = {0, 0, 1000, 1001};
-    gSrcRects[SPRITE_PLAYER_OFEK]      = {0, 0, 1000, 1001};
-    gSrcRects[SPRITE_PLAYER_NOA]       = {0, 0, 1000, 1001};
-    gSrcRects[SPRITE_PLAYER_ELIZABETH] = {0, 0, 1000, 1001};
-
 
     LoadDigitSprite(renderer);
-
-
+    LoadCharacterSprites(renderer);
+    LoadBackgroundSprites(renderer);
+    LoadCollectableSprites(renderer);
+    LoadTitleSprites(renderer);
 }
 
 void LoadDigitSprite(SDL_Renderer* renderer) {
@@ -79,6 +47,54 @@ void LoadDigitSprite(SDL_Renderer* renderer) {
     gSrcRects[SPRITE_DIGIT_7] = {98, 112, 28, 58};
     gSrcRects[SPRITE_DIGIT_8] = {137, 116, 27, 55};
     gSrcRects[SPRITE_DIGIT_9] = {175, 118, 28, 54};
+}
+
+void LoadCharacterSprites(SDL_Renderer* renderer) {
+    gTextures[SPRITE_PLAYER_IDLE] = LoadTexture(renderer, "res/player.png");
+    gTextures[SPRITE_PLAYER_AMAL]      = LoadTexture(renderer, "res/Player_Amal.png");
+    gTextures[SPRITE_PLAYER_OFEK]      = LoadTexture(renderer, "res/Player_Ofek.png");
+    gTextures[SPRITE_PLAYER_NOA]       = LoadTexture(renderer, "res/Player_Noa.png");
+    gTextures[SPRITE_PLAYER_ELIZABETH] = LoadTexture(renderer, "res/Player_Elizabeth11.png");
+
+    gSrcRects[SPRITE_PLAYER_IDLE] = {0, 7, 164, 169};
+    gSrcRects[SPRITE_PLAYER_AMAL]      = {0, 0, 1000, 1001};
+    gSrcRects[SPRITE_PLAYER_OFEK]      = {0, 0, 1000, 1001};
+    gSrcRects[SPRITE_PLAYER_NOA]       = {0, 0, 1000, 1001};
+    gSrcRects[SPRITE_PLAYER_ELIZABETH] = {0, 0, 1000, 1001};
+}
+
+void LoadBackgroundSprites(SDL_Renderer* renderer) {
+    gTextures[SPRITE_BACKGROUND_LEVEL1] = LoadTexture(renderer, "res/background_level1.png");
+    gTextures[SPRITE_BACKGROUND_LEVEL2] = LoadTexture(renderer, "res/background_level2.png");
+    gTextures[SPRITE_BACKGROUND_LEVEL3] = LoadTexture(renderer, "res/background_level3.png");
+
+    gSrcRects[SPRITE_BACKGROUND_LEVEL1] = {0, 0, 1280, 720};
+    gSrcRects[SPRITE_BACKGROUND_LEVEL2] = {0, 0, 1280, 720};
+    gSrcRects[SPRITE_BACKGROUND_LEVEL3] = {0, 0, 1280, 720};
+}
+
+void LoadCollectableSprites(SDL_Renderer* renderer) {
+    gTextures[SPRITE_GOLD] = LoadTexture(renderer, "res/gold.png");
+    gTextures[SPRITE_ROCK] = LoadTexture(renderer, "res/rock.png");
+    gTextures[SPRITE_DIAMOND] = LoadTexture(renderer, "res/diamond.png");
+    gTextures[SPRITE_BOMB] = LoadTexture(renderer, "res/bom.png");
+    gTextures[SPRITE_TREASURE_CHEST] = LoadTexture(renderer, "res/treasureChest.png");
+
+    gSrcRects[SPRITE_GOLD] = {0, 0, 35, 30};
+    gSrcRects[SPRITE_ROCK] = {0, 0, 77, 87};
+    gSrcRects[SPRITE_DIAMOND] = {0, 0, 41, 32};
+    gSrcRects[SPRITE_BOMB] = {0, 0, 77, 67};
+    gSrcRects[SPRITE_TREASURE_CHEST] = {33, 50, 88, 82};
+}
+
+void LoadTitleSprites(SDL_Renderer* renderer) {
+    gTextures[SPRITE_TITLE_MONEY] = LoadTexture(renderer, "res/titleMoney.png");
+    gTextures[SPRITE_TITLE_TIME]  = LoadTexture(renderer, "res/titleTime.png");
+    gTextures[SPRITE_CHOOSE_PLAYER_TITLE] = LoadTexture(renderer, "res/choosePlayerTitle.png");
+
+    gSrcRects[SPRITE_TITLE_MONEY] = {0, 0, 112, 32};
+    gSrcRects[SPRITE_TITLE_TIME]  = {0, 0, 83, 25};
+    gSrcRects[SPRITE_CHOOSE_PLAYER_TITLE] = {0, 0, 1014, 612};
 }
 
 void UnloadAllSprites() {
