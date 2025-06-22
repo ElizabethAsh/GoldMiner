@@ -22,7 +22,7 @@ add_executable(BAGEL
         sprite_manager.cpp
         sprite_manager.h
         debug_draw.cpp debug_draw.h
-        game_manager.cpp game_manager.h)
+        )
 
 add_subdirectory(lib/SDL)
 target_link_libraries(BAGEL PUBLIC SDL3-static)
