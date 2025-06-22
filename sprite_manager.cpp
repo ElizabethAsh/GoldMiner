@@ -91,10 +91,12 @@ void LoadTitleSprites(SDL_Renderer* renderer) {
     gTextures[SPRITE_TITLE_MONEY] = LoadTexture(renderer, "res/titleMoney.png");
     gTextures[SPRITE_TITLE_TIME]  = LoadTexture(renderer, "res/titleTime.png");
     gTextures[SPRITE_CHOOSE_PLAYER_TITLE] = LoadTexture(renderer, "res/choosePlayerTitle.png");
+    gTextures[SPRITE_CHOOSE_BACKGROUND_TITLE] = LoadTexture(renderer, "res/chooseBackgroundTitle.png");
 
     gSrcRects[SPRITE_TITLE_MONEY] = {0, 0, 112, 32};
     gSrcRects[SPRITE_TITLE_TIME]  = {0, 0, 83, 25};
     gSrcRects[SPRITE_CHOOSE_PLAYER_TITLE] = {0, 0, 1014, 612};
+    gSrcRects[SPRITE_CHOOSE_BACKGROUND_TITLE] = {0, 0, 1014, 612};
 }
 
 void UnloadAllSprites() {
