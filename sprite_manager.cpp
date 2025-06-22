@@ -67,10 +67,15 @@ void LoadBackgroundSprites(SDL_Renderer* renderer) {
     gTextures[SPRITE_BACKGROUND_LEVEL1] = LoadTexture(renderer, "res/background_level1.png");
     gTextures[SPRITE_BACKGROUND_LEVEL2] = LoadTexture(renderer, "res/background_level2.png");
     gTextures[SPRITE_BACKGROUND_LEVEL3] = LoadTexture(renderer, "res/background_level3.png");
+    gTextures[SPRITE_BACKGROUND_LEVEL4] = LoadTexture(renderer, "res/background_level4.png");
+    gTextures[SPRITE_BACKGROUND_LEVEL5] = LoadTexture(renderer, "res/background_level5.png");
+
 
     gSrcRects[SPRITE_BACKGROUND_LEVEL1] = {0, 0, 1280, 720};
     gSrcRects[SPRITE_BACKGROUND_LEVEL2] = {0, 0, 1280, 720};
     gSrcRects[SPRITE_BACKGROUND_LEVEL3] = {0, 0, 1280, 720};
+    gSrcRects[SPRITE_BACKGROUND_LEVEL4] = {0, 0, 1280, 720};
+    gSrcRects[SPRITE_BACKGROUND_LEVEL5] = {0, 0, 1280, 720};
 }
 
 void LoadCollectableSprites(SDL_Renderer* renderer) {

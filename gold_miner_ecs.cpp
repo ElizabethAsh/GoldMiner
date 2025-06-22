@@ -1723,5 +1723,59 @@ void CheckForGameOverSystem() {
         goldminer::CreateDiamond(600.0f, 350.0f);
     }
 
+    void LoadLayout4() {
+        // Mark previous layout entities for destruction
+        for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
+            bagel::ent_type ent{i};
+            if (bagel::World::mask(ent).test(bagel::Component<LevelInfo>::Bit) ||
+                bagel::World::mask(ent).test(bagel::Component<ItemType>::Bit)) {
+                bagel::World::addComponent<DestroyTag>(ent, {});
+            }
+        }
+
+        // Apply destruction
+        DestructionSystem();
+
+        // Set background for this layout
+        bagel::Entity layoutEntity = bagel::Entity::create();
+        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL4});
+
+
+        goldminer::CreateGold(100.0f, 500.0f);
+        goldminer::CreateDiamond(500.0f, 520.0f);
+        goldminer::CreateDiamond(650.0f, 400.0f);
+        goldminer::CreateRock(900.0f, 530.0f);
+        goldminer::CreateGold(1000.0f, 350.0f);
+        goldminer::CreateTreasureChest(300.0f, 510.0f);
+        goldminer::CreateGold(300.0f, 350.0f);
+        goldminer::CreateRock(200.0f, 400.0f);
+        goldminer::CreateTreasureChest(500.0f, 550.0f);
+    }
+    void LoadLayout5() {
+        // Mark previous layout entities for destruction
+        for (bagel::id_type i = 0; i <= bagel::World::maxId().id; ++i) {
+            bagel::ent_type ent{i};
+            if (bagel::World::mask(ent).test(bagel::Component<LevelInfo>::Bit) ||
+                bagel::World::mask(ent).test(bagel::Component<ItemType>::Bit)) {
+                bagel::World::addComponent<DestroyTag>(ent, {});
+            }
+        }
+
+        // Apply destruction
+        DestructionSystem();
+
+        // Set background for this layout
+        bagel::Entity layoutEntity = bagel::Entity::create();
+        layoutEntity.add(LevelInfo{SPRITE_BACKGROUND_LEVEL5});
+
+
+        goldminer::CreateGold(120.0f, 480.0f);
+        goldminer::CreateDiamond(520.0f, 505.0f);
+        goldminer::CreateDiamond(670.0f, 390.0f);
+        goldminer::CreateRock(880.0f, 550.0f);
+        goldminer::CreateGold(980.0f, 360.0f);
+        goldminer::CreateTreasureChest(280.0f, 495.0f);
+        goldminer::CreateGold(320.0f, 370.0f);
+    }
 
 } // namespace goldminer

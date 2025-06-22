@@ -34,6 +34,8 @@ enum SpriteID {
     SPRITE_BACKGROUND_LEVEL1,
     SPRITE_BACKGROUND_LEVEL2,
     SPRITE_BACKGROUND_LEVEL3,
+    SPRITE_BACKGROUND_LEVEL4,
+    SPRITE_BACKGROUND_LEVEL5,
     SPRITE_DIGIT_0,
     SPRITE_DIGIT_1,
     SPRITE_DIGIT_2,
@@ -197,6 +199,8 @@ namespace goldminer
     void LoadLayout1();
     void LoadLayout2();
     void LoadLayout3();
+    void LoadLayout4();
+    void LoadLayout5();
 
 } // namespace goldminer
 

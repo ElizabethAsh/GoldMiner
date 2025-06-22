@@ -36,10 +36,12 @@ int selectionP2 = 0;
 bool p1Confirmed = false;
 bool p2Confirmed = false;
 
-std::array<SpriteID, 3> availableBackgrounds = {
+std::array<SpriteID, 5> availableBackgrounds = {
     SPRITE_BACKGROUND_LEVEL1,
     SPRITE_BACKGROUND_LEVEL2,
-    SPRITE_BACKGROUND_LEVEL3
+    SPRITE_BACKGROUND_LEVEL3,
+    SPRITE_BACKGROUND_LEVEL4,
+    SPRITE_BACKGROUND_LEVEL5
 };
 
 int selectionBG = 0;
@@ -128,6 +130,8 @@ int main() {
                                 case 0: goldminer::LoadLayout1(); break;
                                 case 1: goldminer::LoadLayout2(); break;
                                 case 2: goldminer::LoadLayout3(); break;
+                                case 3: goldminer::LoadLayout4(); break;
+                                case 4: goldminer::LoadLayout5(); break;
                             }
                             goldminer::CreateUIEntity(1);
                             goldminer::CreateUIEntity(2);
