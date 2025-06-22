@@ -156,7 +156,7 @@ int main() {
             // Draw title image at the top
             SDL_FRect titleDst = {
                 (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
-                20.0f,                             // top margin
+                120.0f,                            // top margin - הורדנו מ-20 ל-120
                 700.0f,                            // width
                 300.0f                             // height
             };
@@ -205,18 +205,24 @@ int main() {
                 SDL_RenderRect(renderer, &dst2);
             }
         }
-
-
         else if (gameState == GameState::BackgroundSelect) {
-            // Show background preview and selection UI
+
             SDL_FRect bgRect = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SpriteID bgID = availableBackgrounds[selectionBG];
             SDL_RenderTexture(renderer, GetSpriteTexture(bgID), nullptr, &bgRect);
-            // Draw a yellow border to indicate selection
+            
+            SDL_FRect titleDst = {
+                (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
+                320.0f,
+                700.0f,
+                300.0f
+            };
+            
+            SDL_Texture* titleTexture = GetSpriteTexture(SPRITE_CHOOSE_BACKGROUND_TITLE);
+            SDL_RenderTexture(renderer, titleTexture, nullptr, &titleDst);
+            // Draw border last
             SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
             SDL_RenderRect(renderer, &bgRect);
-            // Optionally, show instructions
-            // (You can add text rendering here if you have a font system)
         }
         else if (gameState == GameState::Playing) {
             SDL_FRect bg1 = {0, 0, 1280, 720};
