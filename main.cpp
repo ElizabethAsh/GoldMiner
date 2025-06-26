@@ -159,10 +159,10 @@ int main() {
         else if (gameState == GameState::CharacterSelect) {
             // Draw title image at the top
             SDL_FRect titleDst = {
-                (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
-                120.0f,                            // top margin - הורדנו מ-20 ל-120
-                700.0f,                            // width
-                300.0f                             // height
+                (float)(SCREEN_WIDTH / 2 - 300),  // center horizontally
+                20.0f,                            // top margin - הורדנו מ-20 ל-120
+                600.0f,                            // width
+                600.0f                             // height
             };
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_CHOOSE_PLAYER_TITLE), nullptr, &titleDst);
 
