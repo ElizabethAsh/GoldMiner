@@ -29,12 +29,14 @@ add_executable(BAGEL
 )
 
 # Find SFML - updated components for SFML 3.x
-find_package(SFML COMPONENTS Window Graphics Audio Network REQUIRED)
-if (SFML_FOUND)
-        target_link_libraries(BAGEL PRIVATE SFML::Audio SFML::Graphics SFML::Window SFML::Network)
-else()
-        message(FATAL_ERROR "SFML not found or components are incorrect. Please ensure SFML 3.x is installed via Homebrew and components are listed correctly (e.g., Window, Graphics, Audio, Network).")
-endif()
+add_subdirectory(lib/SFML-master)
+target_link_libraries(BAGEL
+        PUBLIC
+        sfml-graphics
+        sfml-window
+        sfml-audio
+        sfml-network
+)
 
 add_subdirectory(lib/SDL)
 target_link_libraries(BAGEL PUBLIC SDL3-static)
@@ -67,4 +69,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${PROJECT_SOURCE_DIR}/lib/SDL_image/include/SDL3_image
 
         ${PROJECT_SOURCE_DIR}/lib/box2d/include
+        ${PROJECT_SOURCE_DIR}/lib/SFML-master/include
 )
