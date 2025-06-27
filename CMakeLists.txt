@@ -7,6 +7,8 @@ add_compile_options(-Wall -Wextra)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
+
+
 set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
 set(BUILD_SHARED_LIBS OFF)
@@ -21,8 +23,18 @@ add_executable(BAGEL
         gold_miner_ecs.h
         sprite_manager.cpp
         sprite_manager.h
+        sound_manager.cpp
+        sound_manager.h
         debug_draw.cpp debug_draw.h
-        )
+)
+
+# Find SFML - updated components for SFML 3.x
+find_package(SFML COMPONENTS Window Graphics Audio Network REQUIRED)
+if (SFML_FOUND)
+        target_link_libraries(BAGEL PRIVATE SFML::Audio SFML::Graphics SFML::Window SFML::Network)
+else()
+        message(FATAL_ERROR "SFML not found or components are incorrect. Please ensure SFML 3.x is installed via Homebrew and components are listed correctly (e.g., Window, Graphics, Audio, Network).")
+endif()
 
 add_subdirectory(lib/SDL)
 target_link_libraries(BAGEL PUBLIC SDL3-static)
