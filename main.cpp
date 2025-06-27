@@ -218,12 +218,13 @@ int main() {
             SDL_FRect bgRect = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SpriteID bgID = availableBackgrounds[selectionBG];
             SDL_RenderTexture(renderer, GetSpriteTexture(bgID), nullptr, &bgRect);
-            
+            float size = 500.0f;
+
             SDL_FRect titleDst = {
-                (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
-                320.0f,
-                700.0f,
-                300.0f
+                (float)(SCREEN_WIDTH / 2 - size / 2),  // center horizontally
+                250.0f,
+                size,
+                size
             };
             
             SDL_Texture* titleTexture = GetSpriteTexture(SPRITE_CHOOSE_BACKGROUND_TITLE);
