@@ -7,6 +7,8 @@ add_compile_options(-Wall -Wextra)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
+
+
 set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
 set(BUILD_SHARED_LIBS OFF)
@@ -21,8 +23,20 @@ add_executable(BAGEL
         gold_miner_ecs.h
         sprite_manager.cpp
         sprite_manager.h
+        sound_manager.cpp
+        sound_manager.h
         debug_draw.cpp debug_draw.h
-        )
+)
+
+# Find SFML - updated components for SFML 3.x
+add_subdirectory(lib/SFML-master)
+target_link_libraries(BAGEL
+        PUBLIC
+        sfml-graphics
+        sfml-window
+        sfml-audio
+        sfml-network
+)
 
 add_subdirectory(lib/SDL)
 target_link_libraries(BAGEL PUBLIC SDL3-static)
@@ -55,4 +69,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${PROJECT_SOURCE_DIR}/lib/SDL_image/include/SDL3_image
 
         ${PROJECT_SOURCE_DIR}/lib/box2d/include
+        ${PROJECT_SOURCE_DIR}/lib/SFML-master/include
 )
