@@ -12,11 +12,9 @@
 #include "debug_draw.h"
 #include <unordered_map>
 #include <vector>
-#include "sound_manager.h"
 
 
-namespace goldminer{
-    SoundManager g_soundManager;
+namespace goldminer {
     b2WorldId gWorld = b2_nullWorldId;
     int player_id = 0; // Default to 0 = no winner / tie
     bool game_over = false;
@@ -817,7 +815,6 @@ namespace goldminer{
             auto& input = World::getComponent<PlayerInput>(playerEntity);
             if (ropeControl.state == RopeControl::State::AtRest && input.sendRope) {
                 ropeControl.state = RopeControl::State::Extending;
-                g_soundManager.playSound("stretch");
                 input.sendRope = false; // consume input
             }
 
@@ -856,7 +853,7 @@ namespace goldminer{
             }
             else if (ropeControl.state == RopeControl::State::Retracting) {
                 float weightMultiplier = 1.0f;
-                g_soundManager.playSound("gear_weal");
+
                 if (World::mask(rope).test(Component<GrabbedJoint>::Bit)) {
                     const auto& joint = World::getComponent<GrabbedJoint>(rope);
                     bagel::ent_type attached{joint.attachedEntityId};
@@ -878,7 +875,6 @@ namespace goldminer{
                 if (length.value <= 0.0f) {
                     length.value = 0.0f;
                     ropeControl.state = RopeControl::State::AtRest;
-                    g_soundManager.stopAllSounds();
                     b2Body_SetLinearVelocity(phys.bodyId, {0, 0});
                 } else {
                     // Set velocity back toward the origin
@@ -952,7 +948,7 @@ namespace goldminer{
                 std::cout << "One of the entities has no user data.\n";
                 continue;
             }
-            g_soundManager.playSound("collision");
+
             ent_type entA = *userDataA;
             ent_type entB = *userDataB;
             std::cout << "Hit detected between Entity " << entA.id << " and Entity " << entB.id << std::endl;
@@ -999,7 +995,6 @@ namespace goldminer{
      * after `PullObjectSystem()` has updated object positions and grab logic.
      */
     void ScoreSystem() {
-         g_soundManager.update();
         using namespace bagel;
         using namespace goldminer;
 
@@ -1034,12 +1029,7 @@ namespace goldminer{
 
                 const PlayerInfo& scorePlayer = World::getComponent<PlayerInfo>(scoreEnt);
                 if (scorePlayer.playerID != pid) continue;
-                if(value.amount >= 0 && value.amount <50){
-                    g_soundManager.playSoundLimited("small_coins", sf::seconds(1.3f));
-                }
-                if(value.amount >= 50 && value.amount <= 100){
-                    g_soundManager.playSound("coin");
-                }
+
                 Score& score = World::getComponent<Score>(scoreEnt);
                 score.points += value.amount;
 
@@ -1252,14 +1242,8 @@ namespace goldminer{
             GameTimer& timer = World::getComponent<GameTimer>(ent);
             timer.timeLeft -= deltaTime;
 
-            if(timer.timeLeft == 3.0f){
-                g_soundManager.playSoundLimited("ticking_clock",sf::seconds(3.0f));
-            }
-
-            if (timer.timeLeft < 0.0f) {
+            if (timer.timeLeft < 0.0f)
                 timer.timeLeft = 0.0f;
-                g_soundManager.stopAllSounds();
-            }
         }
     }
 
