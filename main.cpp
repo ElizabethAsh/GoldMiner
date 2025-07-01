@@ -255,6 +255,7 @@ int main() {
             goldminer::CollisionSystem();
             goldminer::CheckForGameOverSystem();
             goldminer::RenderSystem(renderer);
+            goldminer::Box2DDebugRenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
             goldminer::UISystem(renderer);
             goldminer::DestructionSystem();
