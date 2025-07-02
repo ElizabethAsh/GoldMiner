@@ -1453,6 +1453,17 @@ namespace goldminer{
 
         for (ent_type e : toDelete) {
             std::cout << "[DestructionSystem] Destroying entity " << e.id << "\n";
+
+            if (World::mask(e).test(Component<PhysicsBody>::Bit)) {
+                auto &phys = World::getComponent<PhysicsBody>(e);
+                if (b2Body_IsValid(phys.bodyId)) {
+                    b2DestroyBody(phys.bodyId);
+                }
+            }
+        }
+
+        for (ent_type e : toDelete) {
+            std::cout << "[DestructionSystem] Destroying entity " << e.id << "\n";
             if (World::mask(e).test(Component<Position>::Bit)) World::delComponent<Position>(e);
             if (World::mask(e).test(Component<Velocity>::Bit)) World::delComponent<Velocity>(e);
             if (World::mask(e).test(Component<Rotation>::Bit)) World::delComponent<Rotation>(e);

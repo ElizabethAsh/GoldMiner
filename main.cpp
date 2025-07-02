@@ -163,10 +163,10 @@ int main() {
         else if (gameState == GameState::CharacterSelect) {
             // Draw title image at the top
             SDL_FRect titleDst = {
-                (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
-                120.0f,                            // top margin - הורדנו מ-20 ל-120
-                700.0f,                            // width
-                300.0f                             // height
+                (float)(SCREEN_WIDTH / 2 - 300),  // center horizontally
+                20.0f,                            // top margin
+                600.0f,                            // width
+                600.0f                             // height
             };
             SDL_RenderTexture(renderer, GetSpriteTexture(SPRITE_CHOOSE_PLAYER_TITLE), nullptr, &titleDst);
 
@@ -218,12 +218,14 @@ int main() {
             SDL_FRect bgRect = {0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT};
             SpriteID bgID = availableBackgrounds[selectionBG];
             SDL_RenderTexture(renderer, GetSpriteTexture(bgID), nullptr, &bgRect);
-            
+            float size = 500.0f;
+
+
             SDL_FRect titleDst = {
-                (float)(SCREEN_WIDTH / 2 - 350),  // center horizontally
-                320.0f,
-                700.0f,
-                300.0f
+                (float)(SCREEN_WIDTH / 2 - size / 2),  // center horizontally
+                250.0f,
+                size,
+                size
             };
             
             SDL_Texture* titleTexture = GetSpriteTexture(SPRITE_CHOOSE_BACKGROUND_TITLE);
@@ -254,6 +256,8 @@ int main() {
             goldminer::CollisionSystem();
             goldminer::CheckForGameOverSystem();
             goldminer::RenderSystem(renderer);
+            // uncommit this line to enable Box2D debug rendering
+            //goldminer::Box2DDebugRenderSystem(renderer);
             goldminer::RopeRenderSystem(renderer);
             goldminer::UISystem(renderer);
             goldminer::DestructionSystem();
